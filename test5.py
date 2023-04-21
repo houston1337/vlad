@@ -1,13 +1,14 @@
 from tkinter import *
 from tkinter import ttk
-from numpy import *
+import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter.messagebox import showerror
 import customtkinter as ctk
 from line import Lines
 from OX import OXname
-from numpy import genfromtxt
+from files import Files
+from graphSettings import GraphSettings
 
 
 class App(Tk):
@@ -29,9 +30,20 @@ class App(Tk):
         self.functionField.bind("<Return>", self.Gen_graph2)
         self.functionField.grid(row=0, column=2, columnspan=3)
 
+        self.addNew = Button(self.f_top, text="Добавить новый", borderwidth=5, command=self.createNewGraph)
+        self.addNew.grid(row=0, column=5)
+
+        self.goToLabel = Label(self.f_top, width=15, height=2, text="Перейти к:", anchor='w')
+        self.goToLabel.grid(row=0, column=6)
+        self.goTo = StringVar()
+        self.goTo.set(0)
+        self.goToField = Entry(self.f_top, width=5, textvariable=self.goTo)
+        self.goToField.grid(row=0, column=7)
+        self.goToButton = Button(self.f_top, text="ok", command=self.setCurrent)
+        self.goToButton.grid(row=0, column=8)
+
         self.buildButton = Button(self.f_top, text="Построить", borderwidth=5, command=self.Gen_graph)
         self.buildButton.grid(row=0, column=5, ipadx=77, ipady=6, rowspan=3)
-
 
         self.intervalStartLabel = Label(self.f_top, width=15, height=2, text="Начало \nинтервала a:", anchor='w')
         self.intervalStartLabel.grid(row=1, column=0)
@@ -52,10 +64,13 @@ class App(Tk):
         self.importBtn = Button(self.f_top, text="Добавить файл", borderwidth=5, command=self.read_from_file)
         self.importBtn.grid(row=2, column=2)
 
-
-        self.useFile = BooleanVar()
-        self.useDataFromFile = Checkbutton(self.f_top, text="Использовать данные из файла", variable=self.useFile)
+        self.isUseFile = BooleanVar()
+        self.useDataFromFile = Checkbutton(self.f_top, text="Использовать данные из файла", variable=self.isUseFile)
         self.useDataFromFile.grid(row=2, column=4)
+
+        self.isDrawAll = BooleanVar()
+        self.DrawAll = Checkbutton(self.f_top, text="Построить все", variable=self.isDrawAll)
+        self.DrawAll.grid(row=2, column=5)
 
         self.f_top.pack(side=TOP, fill=BOTH, padx=[10, 10], pady=[10, 10])
 
@@ -100,7 +115,6 @@ class App(Tk):
 
         self.f_bot.pack(side=RIGHT, fill=Y, padx=[10, 10], pady=[10, 10])
 
-
         self.f_down = LabelFrame()
 
         self.clearBtn = Button(self.f_down, text="Очистить", borderwidth=5, command=self.clear)
@@ -111,7 +125,7 @@ class App(Tk):
 
         # self.l9 = Button(self.f_down, text="Сохранить в файл", borderwidth=5)
         # self.l9.grid(row=0, column=2, padx=5, pady=5)
-        self. f_down.pack(side=BOTTOM, padx=[10, 10], pady=[10, 10])
+        self.f_down.pack(side=BOTTOM, padx=[10, 10], pady=[10, 10])
 
         self.fig = Figure(figsize=(5, 4), dpi=100, facecolor='white')
         self.ax = self.fig.add_subplot(111)
@@ -120,32 +134,40 @@ class App(Tk):
         self.canvas = self.canvasAgg.get_tk_widget()
         self.canvas.pack(fill=BOTH, expand=1)
 
-
-    line_color = "red"
-    line_type = "-"
-    line_thick = 1
+    currentGraphIndex = 0
+    lastAddedIndex = 0
+    graphs = np.array([GraphSettings(X=[], Y=[])])
 
     def open_lines(self):
         def callback(data):
-            self.line_color, self.line_type, self.line_thick = data
-        Lines(self, callback)
+            self.graphs[self.currentGraphIndex].color, \
+            self.graphs[self.currentGraphIndex].line_type, \
+            self.graphs[self.currentGraphIndex].line_thick = data
 
-    x_label_text = ""
-    x_label_fontsize = 12
-    x_label_color = "black"
+        Lines(self, callback)
 
     def open_OX(self):
         def callback(data):
-            self.x_label_text, self.x_label_fontsize, self.x_label_color = data
+            self.graphs[self.currentGraphIndex].x_label_text, \
+            self.graphs[self.currentGraphIndex].x_label_fontsize, \
+            self.graphs[self.currentGraphIndex].x_label_color = data
             print(data)
+
         OXname(self, callback)
 
-    Y = []
-
     def read_from_file(self):
-        self.Y = genfromtxt('test.txt', delimiter=';')[0]
-        print(self.Y)
-        print(self.useFile.get())
+        def callback(data):
+            self.file = data
+            self.readFile()
+
+        Files(self, callback)
+
+    def readFile(self):
+        self.allDataFromFile = np.genfromtxt(self.file[0], delimiter=";", dtype=(float))[1:]
+        self.graphs[self.currentGraphIndex].Y = self.allDataFromFile[:, 1]
+        self.graphs[self.currentGraphIndex].X = self.allDataFromFile[:, 0]
+        # print(self.Y)
+        # print(self.isUseFile.get())
 
     def save(self):
         self.after(100, self.Gen_graph)
@@ -155,23 +177,48 @@ class App(Tk):
         self.ax.clear()
         self.canvasAgg.draw()
 
+    # def defineX(self):
+    #     if (not (self.isUseFile.get())):
+    #         self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 5)
+
     def Gen_graph(self):
         try:
             a = float(self.strA.get())
             b = float(self.strB.get())
-            print(str(a) + " " + str(b))
+            # print(str(a) + " " + str(b))
+            # если используется строка ввода функции
+            if (not (self.isUseFile.get())):
+                self.graphs[self.currentGraphIndex].func = self.functionField.get()
+                exec('f = lambda x:' + self.graphs[self.currentGraphIndex].func, globals())
+                self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 5)
+                self.graphs[self.currentGraphIndex].Y = [f(x) for x in self.graphs[self.currentGraphIndex].X]
 
-            if (not(self.useFile.get())):
-                mystr = self.functionField.get()
-                exec('f = lambda x:' + mystr, globals())
-                X = linspace(a, b, 350)
-                self.Y = [f(x) for x in X]
-            else:
-                X = linspace(a, b, self.Y.shape[0])
+            # если используем файл
+            # else:
+            # X = linspace(a, b, self.Y.shape[0])
 
             self.ax.clear()  # очистить графическую область
-            self.ax.plot(X, self.Y, color=self.line_color, linestyle=self.line_type, linewidth=self.line_thick)
-            self.ax.set_xlabel(self.x_label_text, fontsize=self.x_label_fontsize, color=self.x_label_color)
+
+            if (self.isDrawAll.get()):
+                for graph in self.graphs:
+                    self.ax.plot(
+                        graph.X,
+                        graph.Y,
+                        color=graph.color,
+                        linestyle=graph.line_type,
+                        linewidth=graph.line_thick)
+            else:
+                self.ax.plot(
+                    self.graphs[self.currentGraphIndex].X,
+                    self.graphs[self.currentGraphIndex].Y,
+                    color=self.graphs[self.currentGraphIndex].color,
+                    linestyle=self.graphs[self.currentGraphIndex].line_type,
+                    linewidth=self.graphs[self.currentGraphIndex].line_thick)
+
+            self.ax.set_xlabel(
+                self.graphs[self.currentGraphIndex].x_label_text,
+                fontsize=self.graphs[self.currentGraphIndex].x_label_fontsize,
+                color=self.graphs[self.currentGraphIndex].x_label_color)
             self.canvasAgg.draw()  # перерисовать «составной» холст
             return
         except:  # реакция на любую ошибку
@@ -179,6 +226,26 @@ class App(Tk):
 
     def Gen_graph2(self, event):  # чтобы кнопка отжималась при ошибке
         self.after(100, self.Gen_graph)
+
+    def printCurrent(self):
+        print(self.currentGraphIndex)
+        print(self.graphs[self.currentGraphIndex].X)
+        print(self.graphs[self.currentGraphIndex].Y)
+
+    def createNewGraph(self):
+        self.strFunc.set("")
+        self.lastAddedIndex += 1
+        self.currentGraphIndex = self.lastAddedIndex
+        self.graphs = np.append(self.graphs, [GraphSettings(X=[1, 2, 3], Y=[7, 3, 1])])
+        self.printCurrent()
+
+    def setCurrent(self):
+        self.printCurrent()
+        if (self.goTo.get() < str(0) or self.goTo.get() > str(self.lastAddedIndex)):
+            showerror('Ошибка', "Графика не найдено")
+        else:
+            self.currentGraphIndex = int(self.goTo.get())
+            self.strFunc.set(self.graphs[self.currentGraphIndex].func)
 
 
 if __name__ == "__main__":

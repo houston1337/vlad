@@ -106,7 +106,7 @@ class App(Tk):
     Y = []
 
     def read_from_file(self):
-        self.Y = genfromtxt('test.txt', delimiter=';')[0]
+        self.Y = genfromtxt('data/test.txt', delimiter=';')[0]
         print(self.Y)
         print(self.use_file.get())
 
