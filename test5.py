@@ -19,113 +19,132 @@ class App(Tk):
         self.title("VApp")
         ctk.set_appearance_mode("dark")
 
-        self.f_top = LabelFrame(text="Добавление данных")
-
-        self.function_label = Label(self.f_top, width=15, height=2, text="Введите функцию:", anchor='w')
-        self.function_label.grid(row=0, column=0, columnspan=1)
+        self.fTop = LabelFrame(text="Добавление данных")
+        self.fTop.grid_columnconfigure(0, weight=1)
+        self.fTop.grid_columnconfigure(1, weight=1)
+        self.fTop.grid_columnconfigure(2, weight=1)
+        self.fTop.grid_columnconfigure(4, weight=1)
+        self.function_label = ttk.Label(self.fTop, text="Введите функцию:", justify=LEFT)
+        self.function_label.grid(row=0, column=0, sticky=W, padx=12)
 
         self.strFunc = StringVar()
         self.strFunc.set("x")
-        self.functionField = Entry(self.f_top, width=47, textvariable=self.strFunc)
-        self.functionField.bind("<Return>", self.Gen_graph2)
-        self.functionField.grid(row=0, column=2, columnspan=3)
+        self.functionField = ttk.Entry(self.fTop, width=20, textvariable=self.strFunc, justify=LEFT)
+        self.functionField.bind("<Return>", self.gen_graph2)
+        self.functionField.grid(row=0, column=1, sticky=W)
 
-        self.addNew = Button(self.f_top, text="Добавить новый", borderwidth=5, command=self.createNewGraph)
-        self.addNew.grid(row=0, column=5)
+        self.addNew = ttk.Button(self.fTop, text="Добавить новый", width=20, command=self.createNewGraph)
+        self.addNew.grid(row=0, column=2, sticky=W)
 
-        self.goToLabel = Label(self.f_top, width=15, height=2, text="Перейти к:", anchor='w')
-        self.goToLabel.grid(row=0, column=6)
+        self.goToLabel = ttk.Label(self.fTop, text="Перейти к:", justify=LEFT)
+        self.goToLabel.grid(row=0, column=3, sticky=W)
         self.goTo = StringVar()
         self.goTo.set(0)
-        self.goToField = Entry(self.f_top, width=5, textvariable=self.goTo)
-        self.goToField.grid(row=0, column=7)
-        self.goToButton = Button(self.f_top, text="ok", command=self.setCurrent)
-        self.goToButton.grid(row=0, column=8)
+        self.goToField = ttk.Entry(self.fTop, width=5, textvariable=self.goTo, justify=LEFT)
+        self.goToField.grid(row=0, column=4)
+        self.goToButton = ttk.Button(self.fTop, text="ok", command=self.set_curret)
+        self.goToButton.grid(row=0, column=5, sticky=W)
 
-        self.buildButton = Button(self.f_top, text="Построить", borderwidth=5, command=self.Gen_graph)
-        self.buildButton.grid(row=0, column=5, ipadx=77, ipady=6, rowspan=3)
+        self.buildButton = ttk.Button(self.fTop, text="Построить", command=self.gen_graph)
+        self.buildButton.grid(row=1, column=5, ipadx=77, ipady=6)
 
-        self.intervalStartLabel = Label(self.f_top, width=15, height=2, text="Начало \nинтервала a:", anchor='w')
-        self.intervalStartLabel.grid(row=1, column=0)
+        self.intervalStartLabel = ttk.Label(self.fTop, text="Начало интервала a:", justify=LEFT)
+        self.intervalStartLabel.grid(row=1, column=0, sticky=W, padx=12)
         self.strA = StringVar()
         self.strA.set(0)
-        self.strA = Entry(self.f_top, width=5, textvariable=self.strA)
-        self.strA.grid(row=1, column=1)
+        self.start = ttk.Entry(self.fTop, width=10, textvariable=self.strA)
+        self.start.grid(row=1, column=1, sticky=W)
 
-        self.intervalEndLabel = Label(self.f_top, width=15, height=2, text="Конец \nинтервала b:")
-        self.intervalEndLabel.grid(row=1, column=2)
+        self.intervalEndLabel = Label(self.fTop, width=15, height=2, text="Конец интервала b:", justify=LEFT)
+        self.intervalEndLabel.grid(row=1, column=2, sticky=W)
         self.strB = StringVar()
         self.strB.set(10)
-        self.strB = Entry(self.f_top, width=3, textvariable=self.strB)
-        self.strB.grid(row=1, column=3)
+        self.end = ttk.Entry(self.fTop, width=10, textvariable=self.strB)
+        self.end.grid(row=1, column=3, sticky=W)
 
-        self.importLabel = Label(self.f_top, width=25, height=2, text="Импортировать данные\n из файла")
-        self.importLabel.grid(row=2, column=0, columnspan=1)
-        self.importBtn = Button(self.f_top, text="Добавить файл", borderwidth=5, command=self.read_from_file)
-        self.importBtn.grid(row=2, column=2)
+        self.importLabel = Label(self.fTop, text="Файл с \nтабличными значениями", justify=LEFT)
+        self.importLabel.grid(row=2, column=0, sticky=W, padx=12)
+        self.importBtn = ttk.Button(self.fTop, text="Добавить файл", width=20, command=self.read_from_file)
+        self.importBtn.grid(row=2, column=1, sticky=W)
+
+        self.strFile = StringVar()
+        self.strFile.set("")
+        self.fileField = ttk.Entry(self.fTop, width=20, textvariable=self.strFile)
+        self.fileField.bind("<Return>", self.gen_graph2)
+        self.fileField.grid(row=2, column=2, sticky=W)
 
         self.isUseFile = BooleanVar()
-        self.useDataFromFile = Checkbutton(self.f_top, text="Использовать данные из файла", variable=self.isUseFile)
-        self.useDataFromFile.grid(row=2, column=4)
+        self.useDataFromFile = ttk.Checkbutton(self.fTop, text="Использовать данные из файла", variable=self.isUseFile)
+        self.useDataFromFile.grid(row=2, column=5, sticky=W)
+
+        self.batchLabel = Label(self.fTop, text="Пакетная обработка", justify=LEFT)
+        self.batchLabel.grid(row=3, column=0, sticky=W, padx=12, pady=10)
+        self.batchBtn = ttk.Button(self.fTop, text="Добавить файлы", width=20, command=self.read_from_file)
+        self.batchBtn.grid(row=3, column=1, sticky=W)
+
+        self.strFiles = StringVar()
+        self.strFiles.set("ampl1.csv, ampl2.csv ...")
+        self.filesField = ttk.Entry(self.fTop, width=20, textvariable=self.strFiles)
+        self.filesField.grid(row=3, column=2, sticky=W)
 
         self.isDrawAll = BooleanVar()
-        self.DrawAll = Checkbutton(self.f_top, text="Построить все", variable=self.isDrawAll)
-        self.DrawAll.grid(row=2, column=5)
+        self.DrawAll = ttk.Checkbutton(self.fTop, text="Построить все", variable=self.isDrawAll)
+        self.DrawAll.grid(row=3, column=5, sticky=W)
 
-        self.f_top.pack(side=TOP, fill=BOTH, padx=[10, 10], pady=[10, 10])
+        self.fTop.pack(side=TOP, fill=X, padx=10, pady=10)
 
         # добавление раздела для настройки элементов графика (цвет, формат)
 
-        self.f_bot = LabelFrame(text="Настройка элементов графика")
+        self.fBottom = LabelFrame(text="Настройка элементов графика")
 
-        self.linesLabel = Label(self.f_bot, text="Линии", borderwidth=5)
+        self.linesLabel = Label(self.fBottom, text="Линии", borderwidth=5)
         self.linesLabel.grid(row=0, column=0, padx=5, pady=5)
-        self.linesBtn = Button(self.f_bot, text="Настроить", borderwidth=2, command=self.open_lines)
+        self.linesBtn = ttk.Button(self.fBottom, text="Настроить", command=self.open_lines)
         self.linesBtn.grid(row=0, column=1, padx=5, pady=5)
 
-        self.backgroundLabel = Label(self.f_bot, text="Фон", borderwidth=5)
+        self.backgroundLabel = Label(self.fBottom, text="Фон", borderwidth=5)
         self.backgroundLabel.grid(row=1, column=0, padx=5, pady=5)
-        self.backgroundBtn = Button(self.f_bot, text="Настроить", borderwidth=2)
+        self.backgroundBtn = ttk.Button(self.fBottom, text="Настроить")
         self.backgroundBtn.grid(row=1, column=1, padx=5, pady=5)
 
-        self.xAxisLabel = Label(self.f_bot, text="Ось X", borderwidth=5)
+        self.xAxisLabel = Label(self.fBottom, text="Ось X", borderwidth=5)
         self.xAxisLabel.grid(row=2, column=0, padx=5, pady=5)
-        self.xAxisBtn = Button(self.f_bot, text="Настроить", borderwidth=2, command=self.open_OX)
+        self.xAxisBtn = ttk.Button(self.fBottom, text="Настроить", command=self.open_OX)
         self.xAxisBtn.grid(row=2, column=1, padx=5, pady=5)
 
-        self.yAxisLabel = Label(self.f_bot, text="Ось Y", borderwidth=5)
+        self.yAxisLabel = Label(self.fBottom, text="Ось Y", borderwidth=5)
         self.yAxisLabel.grid(row=3, column=0, padx=5, pady=5)
-        self.yAxisBtn = Button(self.f_bot, text="Настроить", borderwidth=2)
+        self.yAxisBtn = ttk.Button(self.fBottom, text="Настроить")
         self.yAxisBtn.grid(row=3, column=1, padx=5, pady=5)
 
-        self.headerLabel = Label(self.f_bot, text="Заголовок", borderwidth=5)
+        self.headerLabel = Label(self.fBottom, text="Заголовок", borderwidth=5)
         self.headerLabel.grid(row=4, column=0, padx=5, pady=5)
-        self.headerBtn = Button(self.f_bot, text="Настроить", borderwidth=2)
+        self.headerBtn = ttk.Button(self.fBottom, text="Настроить")
         self.headerBtn.grid(row=4, column=1, padx=5, pady=5)
 
-        self.gridLabel = Label(self.f_bot, text="Сетка", borderwidth=5)
+        self.gridLabel = Label(self.fBottom, text="Сетка", borderwidth=5)
         self.gridLabel.grid(row=5, column=0, padx=5, pady=5)
-        self.gridBtn = Button(self.f_bot, text="Настроить", borderwidth=2)
+        self.gridBtn = ttk.Button(self.fBottom, text="Настроить")
         self.gridBtn.grid(row=5, column=1, padx=5, pady=5)
 
-        self.legendLabel = Label(self.f_bot, text="Легенда ", borderwidth=5)
+        self.legendLabel = Label(self.fBottom, text="Легенда ", borderwidth=5)
         self.legendLabel.grid(row=7, column=0, padx=5, pady=5)
-        self.legendBtn = Button(self.f_bot, text="Настроить", borderwidth=2)
+        self.legendBtn = ttk.Button(self.fBottom, text="Настроить")
         self.legendBtn.grid(row=7, column=1, padx=5, pady=5)
 
-        self.f_bot.pack(side=RIGHT, fill=Y, padx=[10, 10], pady=[10, 10])
+        self.fBottom.pack(side=RIGHT, fill=Y, padx=10, pady=10)
 
-        self.f_down = LabelFrame()
+        self.fDown = LabelFrame()
 
-        self.clearBtn = Button(self.f_down, text="Очистить", borderwidth=5, command=self.clear)
+        self.clearBtn = ttk.Button(self.fDown, text="Очистить", command=self.clear)
         self.clearBtn.grid(row=0, column=0, padx=5, pady=5)
 
-        self.saveBtn = Button(self.f_down, text="Сохранить изображение", borderwidth=5, command=self.save)
+        self.saveBtn = ttk.Button(self.fDown, text="Сохранить изображение", command=self.save)
         self.saveBtn.grid(row=0, column=1, padx=5, pady=5)
 
-        # self.l9 = Button(self.f_down, text="Сохранить в файл", borderwidth=5)
+        # self.l9 = Button(self.fDown, text="Сохранить в файл", borderwidth=5)
         # self.l9.grid(row=0, column=2, padx=5, pady=5)
-        self.f_down.pack(side=BOTTOM, padx=[10, 10], pady=[10, 10])
+        self.fDown.pack(side=BOTTOM, padx=[10, 10], pady=[10, 10])
 
         self.fig = Figure(figsize=(5, 4), dpi=100, facecolor='white')
         self.ax = self.fig.add_subplot(111)
@@ -157,20 +176,19 @@ class App(Tk):
 
     def read_from_file(self):
         def callback(data):
-            self.file = data
-            self.readFile()
-
+            self.graphs[self.currentGraphIndex].file = data
+            self.read_File()
         Files(self, callback)
 
-    def readFile(self):
-        self.allDataFromFile = np.genfromtxt(self.file[0], delimiter=";", dtype=(float))[1:]
+    def read_File(self):
+        self.allDataFromFile = np.genfromtxt(self.graphs[self.currentGraphIndex].file[0], delimiter=";", dtype=(float))[1:]
         self.graphs[self.currentGraphIndex].Y = self.allDataFromFile[:, 1]
         self.graphs[self.currentGraphIndex].X = self.allDataFromFile[:, 0]
-        # print(self.Y)
+        self.strFile.set(self.graphs[self.currentGraphIndex].file[0])
         # print(self.isUseFile.get())
 
     def save(self):
-        self.after(100, self.Gen_graph)
+        self.after(100, self.gen_graph)
         self.canvasAgg.print_figure('1.jpg')
 
     def clear(self):
@@ -181,10 +199,10 @@ class App(Tk):
     #     if (not (self.isUseFile.get())):
     #         self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 5)
 
-    def Gen_graph(self):
+    def gen_graph(self):
         try:
-            a = float(self.strA.get())
-            b = float(self.strB.get())
+            a = float(self.start.get())
+            b = float(self.end.get())
             # print(str(a) + " " + str(b))
             # если используется строка ввода функции
             if (not (self.isUseFile.get())):
@@ -224,28 +242,41 @@ class App(Tk):
         except:  # реакция на любую ошибку
             showerror('Ошибка', "Неверное выражение или интервал [a,b].")
 
-    def Gen_graph2(self, event):  # чтобы кнопка отжималась при ошибке
-        self.after(100, self.Gen_graph)
+    def gen_graph2(self, event):  # чтобы кнопка отжималась при ошибке
+        self.after(100, self.gen_graph)
 
-    def printCurrent(self):
+    def print_current(self):
         print(self.currentGraphIndex)
         print(self.graphs[self.currentGraphIndex].X)
         print(self.graphs[self.currentGraphIndex].Y)
 
     def createNewGraph(self):
         self.strFunc.set("")
+        self.strFile.set("")
         self.lastAddedIndex += 1
         self.currentGraphIndex = self.lastAddedIndex
         self.graphs = np.append(self.graphs, [GraphSettings(X=[1, 2, 3], Y=[7, 3, 1])])
-        self.printCurrent()
+        self.print_current()
 
-    def setCurrent(self):
-        self.printCurrent()
+    def set_curret(self):
+        self.print_current()
         if (self.goTo.get() < str(0) or self.goTo.get() > str(self.lastAddedIndex)):
             showerror('Ошибка', "Графика не найдено")
         else:
             self.currentGraphIndex = int(self.goTo.get())
             self.strFunc.set(self.graphs[self.currentGraphIndex].func)
+            self.strFile.set(self.graphs[self.currentGraphIndex].file)
+
+    def printAll(self):
+        for graph in self.graphs:
+            print("func ", graph.func)
+            print("X ", graph.X)
+            print("Y ", graph.Y)
+
+            print("color ", graph.color)
+            print("line_type ", graph.line_type)
+            print("line_thick ", graph.line_thick)
+            print("\n_______________________________________________\n")
 
 
 if __name__ == "__main__":

@@ -63,4 +63,4 @@ class OXname(Toplevel):
         font_size = self.thick_line_spin.get()
         color = color_Mapping[self.line_color_combo.get()]
         self.callback([text, font_size, color])
-        self.master.Gen_graph()
+        self.master.gen_graph()

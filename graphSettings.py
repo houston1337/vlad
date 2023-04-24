@@ -7,7 +7,8 @@ class GraphSettings:
                  x_label_text=" ",
                  x_label_fontsize=12,
                  x_label_color="black",
-                 func=""
+                 func="",
+                 file=""
                  ):
         self.X = X
         self.Y = Y
@@ -18,3 +19,4 @@ class GraphSettings:
         self.x_label_fontsize = x_label_fontsize
         self.x_label_color = x_label_color
         self.func = func
+        self.file = file

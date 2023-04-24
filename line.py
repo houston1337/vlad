@@ -82,4 +82,4 @@ class Lines(Toplevel):
         line_thick = self.thick_line_spin.get()
         # Call the callback function and pass the data
         self.callback([line_color, line_type, line_thick])
-        self.master.Gen_graph()
+        self.master.gen_graph()
