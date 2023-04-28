@@ -7,8 +7,9 @@ from tkinter.messagebox import showerror
 import customtkinter as ctk
 from line import Lines
 from OX import OXname
-from files import Files
+from singleFile import SingleFile
 from graphSettings import GraphSettings
+from multipleFiles import multipleFile
 
 
 class App(Tk):
@@ -68,7 +69,7 @@ class App(Tk):
         self.importBtn.grid(row=2, column=1, sticky=W)
 
         self.strFile = StringVar()
-        self.strFile.set("")
+        self.strFile.set("C:/Users/Egor/Desktop/vlad/data/ampl1.csv")
         self.fileField = ttk.Entry(self.fTop, width=20, textvariable=self.strFile)
         self.fileField.bind("<Return>", self.gen_graph2)
         self.fileField.grid(row=2, column=2, sticky=W)
@@ -79,7 +80,7 @@ class App(Tk):
 
         self.batchLabel = Label(self.fTop, text="Пакетная обработка", justify=LEFT)
         self.batchLabel.grid(row=3, column=0, sticky=W, padx=12, pady=10)
-        self.batchBtn = ttk.Button(self.fTop, text="Добавить файлы", width=20, command=self.read_from_file)
+        self.batchBtn = ttk.Button(self.fTop, text="Добавить файлы", width=20, command=self.open_multi)
         self.batchBtn.grid(row=3, column=1, sticky=W)
 
         self.strFiles = StringVar()
@@ -174,18 +175,17 @@ class App(Tk):
 
         OXname(self, callback)
 
+    def open_multi(self):
+        def callback(data):
+            print(data)
+
+        multipleFile(self, callback)
+
     def read_from_file(self):
         def callback(data):
-            self.graphs[self.currentGraphIndex].file = data
-            self.read_File()
-        Files(self, callback)
-
-    def read_File(self):
-        self.allDataFromFile = np.genfromtxt(self.graphs[self.currentGraphIndex].file[0], delimiter=";", dtype=(float))[1:]
-        self.graphs[self.currentGraphIndex].Y = self.allDataFromFile[:, 1]
-        self.graphs[self.currentGraphIndex].X = self.allDataFromFile[:, 0]
-        self.strFile.set(self.graphs[self.currentGraphIndex].file[0])
-        # print(self.isUseFile.get())
+            self.graphs[self.currentGraphIndex].X, \
+            self.graphs[self.currentGraphIndex].Y = data
+        SingleFile(self, callback, self.strFile.get())
 
     def save(self):
         self.after(100, self.gen_graph)
@@ -210,7 +210,6 @@ class App(Tk):
                 exec('f = lambda x:' + self.graphs[self.currentGraphIndex].func, globals())
                 self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 5)
                 self.graphs[self.currentGraphIndex].Y = [f(x) for x in self.graphs[self.currentGraphIndex].X]
-
             # если используем файл
             # else:
             # X = linspace(a, b, self.Y.shape[0])
@@ -246,16 +245,16 @@ class App(Tk):
         self.after(100, self.gen_graph)
 
     def print_current(self):
-        print(self.currentGraphIndex)
         print(self.graphs[self.currentGraphIndex].X)
+        print(self.graphs[self.currentGraphIndex].color)
         print(self.graphs[self.currentGraphIndex].Y)
 
-    def createNewGraph(self):
+    def createNewGraph(self, x=[], y=[]):
         self.strFunc.set("")
         self.strFile.set("")
         self.lastAddedIndex += 1
         self.currentGraphIndex = self.lastAddedIndex
-        self.graphs = np.append(self.graphs, [GraphSettings(X=[1, 2, 3], Y=[7, 3, 1])])
+        self.graphs = np.append(self.graphs, [GraphSettings(X=x, Y=y)])
         self.print_current()
 
     def set_curret(self):
