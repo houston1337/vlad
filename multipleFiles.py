@@ -7,9 +7,8 @@ from tkinter.messagebox import showerror
 
 
 class multipleFile(Toplevel):
-    def __init__(self, master, callback, file_path=""):
+    def __init__(self, master, file_path=""):
         super().__init__(master)
-        self.callback = callback
         self.title("Выбрать файл")
         self.button = ttk.Button(self, text="Выбрать файлы", command=self.select_files, padding=5)
         self.button.grid(row=0, column=0, padx=10, )
@@ -26,10 +25,10 @@ class multipleFile(Toplevel):
         )
 
         index = 2
-        xLabel = ttk.Label(self, text="Столбец X")
-        xLabel.grid(row=1, column=1)
-        yLabel = ttk.Label(self, text="Столбец Y")
-        yLabel.grid(row=1, column=2, padx=10)
+        self.xLabel = ttk.Label(self, text="Столбец X")
+        self.xLabel.grid(row=1, column=1)
+        self.yLabel = ttk.Label(self, text="Столбец Y")
+        self.yLabel.grid(row=1, column=2, padx=10)
         for filename in self.selectedFiles:
             fileLabel = ttk.Label(self, text=os.path.basename(filename))
             fileLabel.grid(row=index, column=0)
@@ -54,9 +53,9 @@ class multipleFile(Toplevel):
             allDataFromFile = np.genfromtxt(file, delimiter=";", dtype=(float))
             X = allDataFromFile[:, int(self.xS[index].get())]
             Y = allDataFromFile[:, int(self.yS[index].get())]
-            self.master.createNewGraph(x=X, y=Y)
+            self.master.createNewGraph(x=X, y=Y, file=file,
+                                       x_column=int(self.xS[index].get()),
+                                       y_column=int(self.yS[index].get()))
         except:
-            showerror('Ошибка', "Ошибка чтения файла -" + os.path.basename(
+            showerror('Ошибка', "Ошибка чтения файла - " + os.path.basename(
                 file) + " Проверьте путь до файла или наличие столбца в файле")
-
-    # def printNumber(self):

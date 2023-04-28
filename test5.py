@@ -10,7 +10,7 @@ from OX import OXname
 from singleFile import SingleFile
 from graphSettings import GraphSettings
 from multipleFiles import multipleFile
-
+from math import *
 
 class App(Tk):
 
@@ -29,7 +29,8 @@ class App(Tk):
         self.function_label.grid(row=0, column=0, sticky=W, padx=12)
 
         self.strFunc = StringVar()
-        self.strFunc.set("x")
+        # self.strFunc.set("x")
+        self.strFunc.set("")
         self.functionField = ttk.Entry(self.fTop, width=20, textvariable=self.strFunc, justify=LEFT)
         self.functionField.bind("<Return>", self.gen_graph2)
         self.functionField.grid(row=0, column=1, sticky=W)
@@ -69,10 +70,11 @@ class App(Tk):
         self.importBtn.grid(row=2, column=1, sticky=W)
 
         self.strFile = StringVar()
-        self.strFile.set("C:/Users/Egor/Desktop/vlad/data/ampl1.csv")
-        self.fileField = ttk.Entry(self.fTop, width=20, textvariable=self.strFile)
+        # self.strFile.set("C:/Users/Egor/Desktop/vlad/data/ampl1.csv")
+        self.strFile.set("")
+        self.fileField = ttk.Entry(self.fTop, width=51, textvariable=self.strFile, state=DISABLED)
         self.fileField.bind("<Return>", self.gen_graph2)
-        self.fileField.grid(row=2, column=2, sticky=W)
+        self.fileField.grid(row=2, column=2, sticky=W, columnspan=4)
 
         self.isUseFile = BooleanVar()
         self.useDataFromFile = ttk.Checkbutton(self.fTop, text="Использовать данные из файла", variable=self.isUseFile)
@@ -176,16 +178,33 @@ class App(Tk):
         OXname(self, callback)
 
     def open_multi(self):
-        def callback(data):
-            print(data)
-
-        multipleFile(self, callback)
+        multipleFile(self)
 
     def read_from_file(self):
         def callback(data):
             self.graphs[self.currentGraphIndex].X, \
-            self.graphs[self.currentGraphIndex].Y = data
-        SingleFile(self, callback, self.strFile.get())
+            self.graphs[self.currentGraphIndex].Y, \
+            self.graphs[self.currentGraphIndex].file, \
+            self.graphs[self.currentGraphIndex].x_column, \
+            self.graphs[self.currentGraphIndex].y_column = data
+            self.strFile.set(self.graphs[self.currentGraphIndex].file)
+
+        SingleFile(self, callback, self.strFile.get(), x_column=self.graphs[self.currentGraphIndex].x_column,
+                   y_column=self.graphs[self.currentGraphIndex].y_column)
+        self.isUseFile.set(True)
+
+    # TODO - передесать чтобы не открывалось лишнее окно
+    # def read_from_file2(self):
+    #     def callback(data):
+    #         self.graphs[self.currentGraphIndex].X, \
+    #         self.graphs[self.currentGraphIndex].Y, \
+    #         self.graphs[self.currentGraphIndex].strFile, \
+    #         self.graphs[self.currentGraphIndex].x_column, \
+    #         self.graphs[self.currentGraphIndex].y_column, = data
+    #         self.strFile.set(self.graphs[self.currentGraphIndex].strFile)
+    #
+    #     SingleFile(self, callback, self.strFile.get(), x_column=self.graphs[self.currentGraphIndex].x_column,
+    #                y_column=self.graphs[self.currentGraphIndex].y_column).send_data()
 
     def save(self):
         self.after(100, self.gen_graph)
@@ -208,14 +227,16 @@ class App(Tk):
             if (not (self.isUseFile.get())):
                 self.graphs[self.currentGraphIndex].func = self.functionField.get()
                 exec('f = lambda x:' + self.graphs[self.currentGraphIndex].func, globals())
-                self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 5)
+                self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 500)
                 self.graphs[self.currentGraphIndex].Y = [f(x) for x in self.graphs[self.currentGraphIndex].X]
             # если используем файл
             # else:
             # X = linspace(a, b, self.Y.shape[0])
 
-            self.ax.clear()  # очистить графическую область
+            # TODO - передесать чтобы не открывалось лишнее окно, но данные получались если просто вставить ссылку на файл при запуске программы
+            # selfread_from_file2()
 
+            self.ax.clear()  # очистить графическую область
             if (self.isDrawAll.get()):
                 for graph in self.graphs:
                     self.ax.plot(
@@ -249,16 +270,18 @@ class App(Tk):
         print(self.graphs[self.currentGraphIndex].color)
         print(self.graphs[self.currentGraphIndex].Y)
 
-    def createNewGraph(self, x=[], y=[]):
+    def createNewGraph(self, x=[], y=[], file="", x_column=0, y_column=1):
         self.strFunc.set("")
-        self.strFile.set("")
+        self.strFile.set(file)
         self.lastAddedIndex += 1
         self.currentGraphIndex = self.lastAddedIndex
-        self.graphs = np.append(self.graphs, [GraphSettings(X=x, Y=y)])
-        self.print_current()
+        self.graphs = np.append(self.graphs, [GraphSettings(X=x, Y=y, file=file, x_column=x_column, y_column=y_column)])
+        if (not (file == "")):
+            self.isUseFile.set(True)
+        # self.print_current()
 
     def set_curret(self):
-        self.print_current()
+        # self.print_current()
         if (self.goTo.get() < str(0) or self.goTo.get() > str(self.lastAddedIndex)):
             showerror('Ошибка', "Графика не найдено")
         else:
@@ -271,7 +294,6 @@ class App(Tk):
             print("func ", graph.func)
             print("X ", graph.X)
             print("Y ", graph.Y)
-
             print("color ", graph.color)
             print("line_type ", graph.line_type)
             print("line_thick ", graph.line_thick)

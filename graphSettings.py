@@ -8,7 +8,9 @@ class GraphSettings:
                  x_label_fontsize=12,
                  x_label_color="black",
                  func="",
-                 file=""
+                 file="",
+                 x_column=0,
+                 y_column=1,
                  ):
         self.X = X
         self.Y = Y
@@ -20,3 +22,5 @@ class GraphSettings:
         self.x_label_color = x_label_color
         self.func = func
         self.file = file
+        self.x_column = x_column
+        self.y_column = y_column
