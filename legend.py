@@ -1,52 +1,54 @@
 from tkinter import *
 from tkinter import ttk
-
-root = Tk()
-root.geometry("400x225")
-root.title ("Настройка легенды")
+from location import LOCATION
 
 
+class Legend(Toplevel):
+    def __init__(self, master, callback, text='', location='best', font_size=12, shadow=False):
+        super().__init__(master)
+        self.callback = callback
+        self.title("Настройка легенды")
 
-line_settings = LabelFrame(text="Настройка легенды")
+        settingsFrame = LabelFrame(self, text="Настройка легенды")
 
+        # текст который будет написан в легенде
+        self.strText = StringVar()
+        self.strText.set(text)
+        legendLabel = Label(settingsFrame, width=15, height=2, text="Текст:")
+        legendLabel.grid(row=0, column=0, padx=5, pady=5)
+        self.legendField = Entry(settingsFrame, width=21, textvariable=self.strText)
+        self.legendField.grid(row=0, column=1, padx=5, pady=5)
 
-l1 = Label(line_settings, width=15, height=2,text="Текст:")
-l4 = Entry (line_settings, width=21)
+        self.legend_location = LOCATION
+        self.legend_location_labels = list(self.legend_location.keys())
+        self.old_location = list(self.legend_location.values()).index(location)
+        legendLocationLabel = Label(settingsFrame, text="Положение легенды", borderwidth=5)
+        legendLocationLabel.grid(row=1, column=0, padx=5, pady=5)
+        self.legendLocationCombo = ttk.Combobox(settingsFrame, values=self.legend_location_labels)
+        self.legendLocationCombo.grid(row=1, column=1, padx=5, pady=5)
+        self.legendLocationCombo.current(0)
 
-line_color = Label(line_settings, text="Положение легенды", borderwidth=5)
-line_color_combo = ttk.Combobox(line_settings, values=[ "Верхний правый",  "Верхний левый",   "Нижний левый",   "Нижний правый",   "Центр слева",   "Центр",   "Центр справа",   "Нижний центр",   "Верхний центр"])
+        self.isShadow = BooleanVar()
+        self.isShadow.set(shadow)
+        legendShadowCheck = ttk.Checkbutton(settingsFrame, text="Тень легенды", variable=self.isShadow)
+        legendShadowCheck.grid(row=2, column=0, padx=5, pady=5, columnspan=2)
 
+        font_size_value = StringVar(value=font_size)
+        fontSizeLabel = Label(settingsFrame, text="Размер шрифта", borderwidth=5)
+        fontSizeLabel.grid(row=3, column=0, padx=5, pady=5)
+        self.fontSizeSpin = Spinbox(settingsFrame, from_=0, to=30, width=5, textvariable=font_size_value)
+        self.fontSizeSpin.grid(row=3, column=1, padx=5, pady=5)
 
-type_line = Label (line_settings, text="Тень легенды", borderwidth=5) 
-type_line_combo = ttk.Combobox(line_settings, values=[ "Добавить",  "Убрать"])
+        settingsFrame.pack(fill=Y, padx=5)
 
-spinbox_var = StringVar(value=1)
-thick_line = Label (line_settings, text="Размер шрифта", borderwidth=5)
-thick_line_spin = Spinbox(line_settings, from_= 0, to = 10,width=5, textvariable=spinbox_var)
+        ok = ttk.Button(self, text="Применить", command=self.send_data)
+        ok.pack(side=TOP)
 
+    def send_data(self):
+        legend = self.legendField.get()
+        legend_location = self.legend_location[self.legendLocationCombo.get()]
+        legend_fontsize = self.fontSizeSpin.get()
+        legend_shadow = self.isShadow.get()
 
-
-l1.grid(row=0, column=0, padx=5, pady=5)
-l4.grid(row=0, column=1, padx=5, pady=5)
-
-line_color.grid(row=1, column=0, padx=5, pady=5)
-line_color_combo.grid(row=1, column=1, padx=5, pady=5)
-line_color_combo.current(0)
-
-type_line.grid(row=2, column=0, padx=5, pady=5)
-type_line_combo.grid(row=2, column=1, padx=5, pady=5)
-type_line_combo.current(0)
-
-thick_line.grid(row=3, column=0, padx=5, pady=5)
-thick_line_spin.grid(row=3, column=1, padx=5, pady=5)
-
-
-line_settings.pack(fill=Y)  
-
-
-
-ok = Button (root, text="Применить", borderwidth=2)
-ok.pack(side=TOP,fill=X)
-
-
-root.mainloop()
+        self.callback([legend, legend_location, legend_fontsize, legend_shadow])
+        self.master.gen_graph()

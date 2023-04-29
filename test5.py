@@ -11,6 +11,10 @@ from singleFile import SingleFile
 from graphSettings import GraphSettings
 from multipleFiles import multipleFile
 from math import *
+from grid import Grid
+from legend import Legend
+import os
+
 
 class App(Tk):
 
@@ -127,12 +131,12 @@ class App(Tk):
 
         self.gridLabel = Label(self.fBottom, text="Сетка", borderwidth=5)
         self.gridLabel.grid(row=5, column=0, padx=5, pady=5)
-        self.gridBtn = ttk.Button(self.fBottom, text="Настроить")
+        self.gridBtn = ttk.Button(self.fBottom, text="Настроить", command=self.open_grid)
         self.gridBtn.grid(row=5, column=1, padx=5, pady=5)
 
         self.legendLabel = Label(self.fBottom, text="Легенда ", borderwidth=5)
         self.legendLabel.grid(row=7, column=0, padx=5, pady=5)
-        self.legendBtn = ttk.Button(self.fBottom, text="Настроить")
+        self.legendBtn = ttk.Button(self.fBottom, text="Настроить", command=self.open_legend)
         self.legendBtn.grid(row=7, column=1, padx=5, pady=5)
 
         self.fBottom.pack(side=RIGHT, fill=Y, padx=10, pady=10)
@@ -160,22 +164,61 @@ class App(Tk):
     lastAddedIndex = 0
     graphs = np.array([GraphSettings(X=[], Y=[])])
 
+    def open_grid(self):
+        def callback(data):
+            self.graphs[self.currentGraphIndex].grid_color, \
+            self.graphs[self.currentGraphIndex].grid_type, \
+            self.graphs[self.currentGraphIndex].grid_thickness, \
+            self.graphs[self.currentGraphIndex].grid_axis = data
+
+        Grid(self, callback,
+             self.graphs[self.currentGraphIndex].grid_color,
+             self.graphs[self.currentGraphIndex].grid_type,
+             self.graphs[self.currentGraphIndex].grid_thickness,
+             self.graphs[self.currentGraphIndex].grid_axis)
+
+    def open_legend(self):
+        def callback(data):
+            self.graphs[self.currentGraphIndex].legend, \
+            self.graphs[self.currentGraphIndex].legend_location, \
+            self.graphs[self.currentGraphIndex].legend_fontsize, \
+            self.graphs[self.currentGraphIndex].legend_shadow = data
+
+        Legend(self, callback,
+               self.graphs[self.currentGraphIndex].legend,
+               self.graphs[self.currentGraphIndex].legend_location,
+               self.graphs[self.currentGraphIndex].legend_fontsize,
+               self.graphs[self.currentGraphIndex].legend_shadow
+               )
+
     def open_lines(self):
         def callback(data):
             self.graphs[self.currentGraphIndex].color, \
             self.graphs[self.currentGraphIndex].line_type, \
-            self.graphs[self.currentGraphIndex].line_thick = data
+            self.graphs[self.currentGraphIndex].line_thick, \
+            self.graphs[self.currentGraphIndex].marker_color, \
+            self.graphs[self.currentGraphIndex].marker_type, \
+            self.graphs[self.currentGraphIndex].marker_size = data
 
-        Lines(self, callback)
+        Lines(self, callback,
+              self.graphs[self.currentGraphIndex].color,
+              self.graphs[self.currentGraphIndex].line_type,
+              self.graphs[self.currentGraphIndex].line_thick,
+              self.graphs[self.currentGraphIndex].marker_color,
+              self.graphs[self.currentGraphIndex].marker_type,
+              self.graphs[self.currentGraphIndex].marker_size
+              )
 
     def open_OX(self):
         def callback(data):
             self.graphs[self.currentGraphIndex].x_label_text, \
             self.graphs[self.currentGraphIndex].x_label_fontsize, \
             self.graphs[self.currentGraphIndex].x_label_color = data
-            print(data)
 
-        OXname(self, callback)
+        OXname(self, callback,
+               self.graphs[self.currentGraphIndex].x_label_text,
+               self.graphs[self.currentGraphIndex].x_label_fontsize,
+               self.graphs[self.currentGraphIndex].x_label_color)
 
     def open_multi(self):
         multipleFile(self)
@@ -214,61 +257,124 @@ class App(Tk):
         self.ax.clear()
         self.canvasAgg.draw()
 
-    # def defineX(self):
-    #     if (not (self.isUseFile.get())):
-    #         self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 5)
+        # def defineX(self):
+        #     if (not (self.isUseFile.get())):
+        #         self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 5)
+
+    isUseLegend = True
 
     def gen_graph(self):
-        try:
-            a = float(self.start.get())
-            b = float(self.end.get())
-            # print(str(a) + " " + str(b))
-            # если используется строка ввода функции
-            if (not (self.isUseFile.get())):
-                self.graphs[self.currentGraphIndex].func = self.functionField.get()
-                exec('f = lambda x:' + self.graphs[self.currentGraphIndex].func, globals())
-                self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 500)
-                self.graphs[self.currentGraphIndex].Y = [f(x) for x in self.graphs[self.currentGraphIndex].X]
-            # если используем файл
-            # else:
-            # X = linspace(a, b, self.Y.shape[0])
+        # try:
+        a = float(self.start.get())
+        b = float(self.end.get())
+        # print(str(a) + " " + str(b))
+        # если используется строка ввода функции
+        if (not (self.isUseFile.get())):
+            self.graphs[self.currentGraphIndex].func = self.functionField.get()
+            exec('f = lambda x:' + self.graphs[self.currentGraphIndex].func, globals())
+            self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 500)
+            self.graphs[self.currentGraphIndex].Y = [f(x) for x in self.graphs[self.currentGraphIndex].X]
+            if self.graphs[self.currentGraphIndex].legend == '' and self.isUseLegend:
+                self.graphs[self.currentGraphIndex].legend = self.graphs[self.currentGraphIndex].func
+        else:
+            if self.graphs[self.currentGraphIndex].legend == '' and self.isUseLegend:
+                self.graphs[self.currentGraphIndex].legend = os.path.basename(self.graphs[self.currentGraphIndex].file)
 
-            # TODO - передесать чтобы не открывалось лишнее окно, но данные получались если просто вставить ссылку на файл при запуске программы
-            # selfread_from_file2()
+        # TODO - передесать чтобы не открывалось лишнее окно, но данные получались если просто вставить ссылку на файл при запуске программы
+        # selfread_from_file2()
 
-            self.ax.clear()  # очистить графическую область
-            if (self.isDrawAll.get()):
+        self.ax.clear()  # очистить графическую область
+        # рисуем все графики на одном холсте
+        if (self.isDrawAll.get()):
+            for graph in self.graphs:
+                self.ax.plot(
+                    graph.X,
+                    graph.Y,
+                    color=graph.color,
+                    linestyle=graph.line_type,
+                    linewidth=graph.line_thick,
+                    marker=graph.marker_type,
+                    markersize=graph.marker_size,
+                    markerfacecolor=graph.marker_color,
+                    markeredgecolor=graph.marker_color,
+                )
+            if (self.isUseLegend):
                 for graph in self.graphs:
                     self.ax.plot(
                         graph.X,
                         graph.Y,
                         color=graph.color,
                         linestyle=graph.line_type,
-                        linewidth=graph.line_thick)
+                        linewidth=graph.line_thick,
+                        label=graph.legend,
+                        marker=graph.marker_type,
+                        markersize=graph.marker_size,
+                        markerfacecolor=graph.marker_color,
+                        markeredgecolor=graph.marker_color,
+
+                    )
+            if (self.isUseLegend):
+                self.ax.legend(loc=graph.legend_location,
+                               shadow=graph.legend_shadow,
+                               fontsize=graph.legend_fontsize)
+        # для одного графика на полотне
+        else:
+            # если легенда включена
+            if (self.isUseLegend):
+                self.ax.plot(
+                    self.graphs[self.currentGraphIndex].X,
+                    self.graphs[self.currentGraphIndex].Y,
+                    color=self.graphs[self.currentGraphIndex].color,
+                    linestyle=self.graphs[self.currentGraphIndex].line_type,
+                    linewidth=self.graphs[self.currentGraphIndex].line_thick,
+                    label=self.graphs[self.currentGraphIndex].legend,
+                    marker=self.graphs[self.currentGraphIndex].marker_type,
+                    markersize=self.graphs[self.currentGraphIndex].marker_size,
+                    markerfacecolor=self.graphs[self.currentGraphIndex].marker_color,
+                    markeredgecolor=self.graphs[self.currentGraphIndex].marker_color,
+
+                )
+                self.ax.legend(loc=self.graphs[self.currentGraphIndex].legend_location,
+                               shadow=self.graphs[self.currentGraphIndex].legend_shadow,
+                               fontsize=self.graphs[self.currentGraphIndex].legend_fontsize)
+            # если легенда отключена
             else:
                 self.ax.plot(
                     self.graphs[self.currentGraphIndex].X,
                     self.graphs[self.currentGraphIndex].Y,
                     color=self.graphs[self.currentGraphIndex].color,
                     linestyle=self.graphs[self.currentGraphIndex].line_type,
-                    linewidth=self.graphs[self.currentGraphIndex].line_thick)
+                    linewidth=self.graphs[self.currentGraphIndex].line_thick,
+                    marker=self.graphs[self.currentGraphIndex].marker_type,
+                    markersize=self.graphs[self.currentGraphIndex].marker_size,
+                    markerfacecolor=self.graphs[self.currentGraphIndex].marker_color,
+                    markeredgecolor=self.graphs[self.currentGraphIndex].marker_color,
+                )
 
-            self.ax.set_xlabel(
-                self.graphs[self.currentGraphIndex].x_label_text,
-                fontsize=self.graphs[self.currentGraphIndex].x_label_fontsize,
-                color=self.graphs[self.currentGraphIndex].x_label_color)
-            self.canvasAgg.draw()  # перерисовать «составной» холст
-            return
-        except:  # реакция на любую ошибку
-            showerror('Ошибка', "Неверное выражение или интервал [a,b].")
+        # подпись по Х
+        self.ax.set_xlabel(
+            self.graphs[self.currentGraphIndex].x_label_text,
+            fontsize=self.graphs[self.currentGraphIndex].x_label_fontsize,
+            color=self.graphs[self.currentGraphIndex].x_label_color)
+        # настройка сетки
+        self.ax.grid(color=self.graphs[self.currentGraphIndex].grid_color,
+                     linestyle=self.graphs[self.currentGraphIndex].grid_type,
+                     linewidth=self.graphs[self.currentGraphIndex].grid_thickness,
+                     axis=self.graphs[self.currentGraphIndex].grid_axis)
+
+        # настройка легенды
+
+        self.canvasAgg.draw()  # перерисовать «составной» холст
+        self.print_current()
+        return
+        # except:  # реакция на любую ошибку
+        #     showerror('Ошибка', "Неверное выражение или интервал [a,b].")
 
     def gen_graph2(self, event):  # чтобы кнопка отжималась при ошибке
         self.after(100, self.gen_graph)
 
     def print_current(self):
-        print(self.graphs[self.currentGraphIndex].X)
-        print(self.graphs[self.currentGraphIndex].color)
-        print(self.graphs[self.currentGraphIndex].Y)
+        self.graphs[self.currentGraphIndex].print_properties()
 
     def createNewGraph(self, x=[], y=[], file="", x_column=0, y_column=1):
         self.strFunc.set("")

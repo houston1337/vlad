@@ -1,42 +1,43 @@
 from tkinter import *
 from tkinter import ttk
-from colors import color_Mapping
+from colors import COLORS
 
 
 class OXname(Toplevel):
-    def __init__(self, master, callback):
+    def __init__(self, master, callback, text='', font_size=12, text_color='black'):
         super().__init__(master)
         self.callback = callback
         self.geometry("380x285")
         self.title("Настройка оси X")
 
-        self.line_settings = LabelFrame(self, text="Настройка подписи")
+        self.settingsFrame = LabelFrame(self, text="Настройка подписи")
 
-        self.l1 = Label(self.line_settings, width=15, height=2, text="Текст:")
-        self.l4 = Entry(self.line_settings, width=21)
+        self.strText = StringVar()
+        self.strText.set(text)
+        textLabel = Label(self.settingsFrame, width=15, height=2, text="Текст:")
+        textLabel.grid(row=0, column=0, padx=5, pady=5)
+        self.textField = Entry(self.settingsFrame, width=21, textvariable=self.strText)
+        self.textField.grid(row=0, column=1, padx=5, pady=5)
 
         # Цвет
-        self.text_colors = color_Mapping
+        self.text_colors = COLORS
         self.text_colors_label = list(self.text_colors.keys())
-        self.line_color = Label(self.line_settings, text="Цвет шрифта", borderwidth=5)
+        textColorLabel = Label(self.settingsFrame, text="Цвет шрифта", borderwidth=5)
+        textColorLabel.grid(row=1, column=0, padx=5, pady=5)
 
-        self.line_color_combo = ttk.Combobox(self.line_settings, values=self.text_colors_label)
+        old_text_color_index = list(self.text_colors.values()).index(text_color)
+        self.textColorCombo = ttk.Combobox(self.settingsFrame, values=self.text_colors_label)
+        self.textColorCombo.grid(row=1, column=1, padx=5, pady=5)
+        self.textColorCombo.current(old_text_color_index)
 
-        self.spinbox_var = StringVar(value=12)
-        self.thick_line = Label(self.line_settings, text="Размер шрифта", borderwidth=5)
-        self.thick_line_spin = Spinbox(self.line_settings, from_=0, to=30, width=5, textvariable=self.spinbox_var)
+        # Размер шрифта
+        self.font_size_value = StringVar(value=font_size)
+        textThickLabel = Label(self.settingsFrame, text="Размер шрифта", borderwidth=5)
+        textThickLabel.grid(row=2, column=0, padx=5, pady=5)
+        self.textThickSpin = Spinbox(self.settingsFrame, from_=0, to=30, width=5, textvariable=self.font_size_value)
+        self.textThickSpin.grid(row=2, column=1, padx=5, pady=5)
 
-        self.l1.grid(row=0, column=0, padx=5, pady=5)
-        self.l4.grid(row=0, column=1, padx=5, pady=5)
-
-        self.line_color.grid(row=1, column=0, padx=5, pady=5)
-        self.line_color_combo.grid(row=1, column=1, padx=5, pady=5)
-        self.line_color_combo.current(0)
-
-        self.thick_line.grid(row=2, column=0, padx=5, pady=5)
-        self.thick_line_spin.grid(row=2, column=1, padx=5, pady=5)
-
-        self.line_settings.pack(fill=Y)
+        self.settingsFrame.pack(fill=Y)
 
         marker_settings = LabelFrame(self, text="Настройка делений")
 
@@ -56,11 +57,11 @@ class OXname(Toplevel):
 
         marker_settings.pack(fill=Y)
         ok = Button(self, text="Применить", borderwidth=2, command=self.send_data)
-        ok.pack(side=TOP, fill=X)
+        ok.pack(side=TOP)
 
     def send_data(self):
-        text = self.l4.get()
-        font_size = self.thick_line_spin.get()
-        color = color_Mapping[self.line_color_combo.get()]
+        text = self.textField.get()
+        font_size = self.textThickSpin.get()
+        color = self.text_colors[self.textColorCombo.get()]
         self.callback([text, font_size, color])
         self.master.gen_graph()

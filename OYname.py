@@ -51,7 +51,7 @@ thick_line_spin1 = Spinbox(marker_settings, from_= 0, to = 10,width=5, textvaria
 
 spinbox_var = StringVar(value=1)
 thick_line = Label (marker_settings, text="Интервал вспомогательных делений", borderwidth=5)
-thick_line_spin = Spinbox(marker_settings, from_= 0, to = 10,width=5, textvariable=spinbox_var)
+thick_line_spin = Spinbox(marker_settings, from_= 0, to = 30,width=5, textvariable=spinbox_var)
 
 
 

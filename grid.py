@@ -1,76 +1,89 @@
 from tkinter import *
-import tkinter as tk
 from tkinter import ttk
-from matplotlib.figure import Figure
-from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
-
-root = Tk()
-root.geometry("380x325")
-root.title ("Настройка сетки")
+from colors import COLORS
+from lineType import LINE_TYPE
 
 
+class Grid(Toplevel):
+    def __init__(self, master, callback, grid_color='grey', grid_type=' ', grid_thickness=0.1, axis='both'):
+        super().__init__(master)
+        self.callback = callback
 
-line_settings = LabelFrame(text="Настройка сетки по оси X")
+        self.title("Настройка сетки")
+        settingsFrame = LabelFrame(self, text="Настройка сетки")
 
-line_color = Label(line_settings, text="Цвет сетки", borderwidth=5)
-line_color_combo = ttk.Combobox(line_settings, values=[ "Синий",  "Зеленый",   "Красный",   "Бирюзовый",   "Желтый",   "Черный"])
+        # Цвет линии
+        self.line_color_Mapping = COLORS
+        self.line_color_label = list(self.line_color_Mapping.keys())
+        lineColor = Label(settingsFrame, text="Цвет сетки", borderwidth=5)
+        lineColor.grid(row=0, column=0, padx=5, pady=5)
+        old_color_index = list(self.line_color_Mapping.values()).index(grid_color)
+        self.lineColorCombo = ttk.Combobox(settingsFrame, values=self.line_color_label)
+        self.lineColorCombo.grid(row=0, column=1, padx=5, pady=5)
+        self.lineColorCombo.current(old_color_index)
 
-type_line = Label (line_settings, text="Начертание", borderwidth=5) 
-type_line_combo = ttk.Combobox(line_settings, values=[ "Сплошная",  "Штриховая",   "Штрих-пунктирная",   "Точечная"])
+        # Тип линии
+        self.line_type_Mapping = LINE_TYPE
+        self.line_type_label = list(self.line_type_Mapping.keys())
+        old_type_index = list(self.line_type_Mapping.values()).index(grid_type)
+        print("old_type_index: ", old_type_index)
+        print("grid_type: ", grid_type)
+        typeLine = Label(settingsFrame, text="Начертание", borderwidth=5)
+        typeLine.grid(row=1, column=0, padx=5, pady=5)
+        self.typeLineCombo = ttk.Combobox(settingsFrame, values=self.line_type_label)
+        self.typeLineCombo.current(old_type_index)
+        self.typeLineCombo.grid(row=1, column=1, padx=5, pady=5)
 
-spinbox_var = StringVar(value=1)
-thick_line = Label (line_settings, text="Толщина сетки", borderwidth=5)
-thick_line_spin = Spinbox(line_settings, from_= 0, to = 10,width=5, textvariable=spinbox_var)
+        # Толщина сетки
+        thickness = StringVar(value=grid_thickness)
+        thickLineLabel = Label(settingsFrame, text="Толщина сетки", borderwidth=5)
+        thickLineLabel.grid(row=2, column=0, padx=5, pady=5)
+        self.thickLineSpin = Spinbox(settingsFrame, from_=0, to=10, width=5, increment=0.1, textvariable=thickness)
+        self.thickLineSpin.grid(row=2, column=1, padx=5, pady=5)
 
+        settingsFrame.pack(fill=Y, padx=5)
 
+        self.isXOn = BooleanVar()
+        self.xGrid = ttk.Checkbutton(settingsFrame, text="Включить сетку для оси X", variable=self.isXOn)
+        self.xGrid.grid(row=3, column=0, columnspan=2, )
 
-line_color.grid(row=0, column=0, padx=5, pady=5)
-line_color_combo.grid(row=0, column=1, padx=5, pady=5)
-line_color_combo.current(0)
+        self.isYOn = BooleanVar()
+        self.yGrid = ttk.Checkbutton(settingsFrame, text="Включить сетку для оси Y", variable=self.isYOn)
+        self.yGrid.grid(row=4, column=0, columnspan=2, )
 
-type_line.grid(row=1, column=0, padx=5, pady=5)
-type_line_combo.grid(row=1, column=1, padx=5, pady=5)
-type_line_combo.current(0)
+        if (axis == 'both'):
+            self.isXOn.set(True)
+            self.isYOn.set(True)
+        elif (axis == 'x'):
+            self.isXOn.set(True)
+            self.isYOn.set(False)
+        elif (axis == 'y'):
+            self.isXOn.set(False)
+            self.isYOn.set(True)
 
-thick_line.grid(row=2, column=0, padx=5, pady=5)
-thick_line_spin.grid(row=2, column=1, padx=5, pady=5)
+        ok = ttk.Button(self, text="Применить", command=self.send_data)
+        ok.pack(side=TOP)
 
+    def send_data(self):
 
-line_settings.pack(fill=Y)  
+        if (self.isXOn.get() and self.isYOn.get()):
+            gridAxis = 'both'
+            print('both', 1)
+        elif (self.isXOn.get() and not (self.isYOn.get())):
+            gridAxis = 'x'
+            print('x', 2)
+        elif (not (self.isXOn.get()) and self.isYOn.get()):
+            gridAxis = 'y'
+            print('y', 3)
+        elif (not (self.isXOn.get()) and not (self.isYOn.get())):
+            gridAxis = 'both'
+            none = list(self.line_type_Mapping.values()).index(" ")
+            self.typeLineCombo.current(none)
+            print('both', 4)
 
+        lineColor = self.line_color_Mapping[self.lineColorCombo.get()]
+        lineType = self.line_type_Mapping[self.typeLineCombo.get()]
+        lineThickness = self.thickLineSpin.get()
 
-
-
-marker_settings = LabelFrame(text="Настройка сетки по оси Y")
-
-
-
-marker_color = Label(marker_settings, text="Цвет сетки", borderwidth=5)
-marker_color_combo = ttk.Combobox(marker_settings, values=["Зеленый",  "Синий",   "Красный",   "Бирюзовый",   "Желтый",   "Черный"])
-
-type_marker = Label (marker_settings, text="Начертание", borderwidth=5) 
-type_marker_combo = ttk.Combobox(marker_settings, values=[ "Сплошная",  "Штриховая",   "Штрих-пунктирная",   "Точечная"])
-
-spinbox_var = StringVar(value=1)
-size_marker = Label (marker_settings, text="Толщина сетки", borderwidth=5)
-size_marker_spin = Spinbox(marker_settings, from_= 0, to = 10,width=5, textvariable=spinbox_var)
-
-
-marker_color.grid(row=0, column=0, padx=5, pady=5)
-marker_color_combo.grid(row=0, column=1, padx=5, pady=5)
-marker_color_combo.current(0)
-
-type_marker.grid(row=1, column=0, padx=5, pady=5)
-type_marker_combo.grid(row=1, column=1, padx=5, pady=5)
-type_marker_combo.current(0)
-
-size_marker.grid(row=2, column=0, padx=5, pady=5)
-size_marker_spin.grid(row=2, column=1, padx=5, pady=5)
-
-marker_settings.pack(fill=Y)  
-
-ok = Button (root, text="Применить", borderwidth=2)
-ok.pack(side=TOP,fill=X)
-
-
-root.mainloop()
+        self.callback([lineColor, lineType, lineThickness, gridAxis])
+        self.master.gen_graph()

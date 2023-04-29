@@ -1,85 +1,97 @@
 from tkinter import *
 from tkinter import ttk
-from colors import color_Mapping
+from colors import COLORS
+from lineType import LINE_TYPE
+from markerType import MARKER_TYPE
+
 
 class Lines(Toplevel):
 
-    def __init__(self, master, callback):
+    def __init__(self, master, callback, line_color='black', line_type='-', line_thickness=1, marker_color='black',
+                 marker_type='', marker_size=1):
         super().__init__(master)
         self.callback = callback
 
-        self.geometry("380x325")
+        #
+        # Линия
+        #
         self.title("Настройка линии")
-
-        self.line_settings = LabelFrame(self, text="Настройка элемента линия")
+        self.settingsFrameLine = LabelFrame(self, text="Настройка элемента линия")
 
         # Цвет
-        self.line_color_Mapping = color_Mapping
+        self.line_color_Mapping = COLORS
         self.line_color_label = list(self.line_color_Mapping.keys())
+        self.old_line_color = list(self.line_color_Mapping.values()).index(line_color)
 
-        line_color = Label(self.line_settings, text="Цвет линии", borderwidth=5)
-        self.line_color_combo = ttk.Combobox(self.line_settings, values=self.line_color_label)
+        lineColor = Label(self.settingsFrameLine, text="Цвет линии", borderwidth=5)
+        lineColor.grid(row=0, column=0, padx=5, pady=5)
+        self.lineColorCombo = ttk.Combobox(self.settingsFrameLine, values=self.line_color_label)
+        self.lineColorCombo.grid(row=0, column=1, padx=5, pady=5)
+        self.lineColorCombo.current(self.old_line_color)
 
         # Тип
-        self.line_type_Mapping = {"Сплошная": "-", "Штриховая": "--", "Штрих-пунктирная": "-.", "Точечная": ":"}
+        self.line_type_Mapping = LINE_TYPE
         self.line_type_label = list(self.line_type_Mapping.keys())
-
-        self.type_line = Label(self.line_settings, text="Тип линии", borderwidth=5)
-        self.type_line_combo = ttk.Combobox(self.line_settings, values=self.line_type_label)
+        self.old_line_type = list(self.line_type_Mapping.values()).index(line_type)
+        self.typeLineLabel = Label(self.settingsFrameLine, text="Тип линии", borderwidth=5)
+        self.typeLineLabel.grid(row=1, column=0, padx=5, pady=5)
+        self.typeLineCombo = ttk.Combobox(self.settingsFrameLine, values=self.line_type_label)
+        self.typeLineCombo.grid(row=1, column=1, padx=5, pady=5)
+        self.typeLineCombo.current(self.old_line_type)
 
         # Толщина
-        spinbox_var = StringVar(value=1)
-        self.thick_line = Label(self.line_settings, text="Толщина линии", borderwidth=5)
-        self.thick_line_spin = Spinbox(self.line_settings, from_=0, to=10, width=5, textvariable=spinbox_var)
+        spinbox_var = StringVar(value=line_thickness)
+        self.thickLineLabel = Label(self.settingsFrameLine, text="Толщина линии", borderwidth=5)
+        self.thickLineLabel.grid(row=2, column=0, padx=5, pady=5)
+        self.thickLineSpin = Spinbox(self.settingsFrameLine, from_=0, to=10, width=5, textvariable=spinbox_var)
+        self.thickLineSpin.grid(row=2, column=1, padx=5, pady=5)
 
-        line_color.grid(row=0, column=0, padx=5, pady=5)
-        self.line_color_combo.grid(row=0, column=1, padx=5, pady=5)
-        self.line_color_combo.current(0)
+        self.settingsFrameLine.pack(fill=Y, padx=5)
 
-        self.type_line.grid(row=1, column=0, padx=5, pady=5)
-        self.type_line_combo.grid(row=1, column=1, padx=5, pady=5)
-        self.type_line_combo.current(0)
+        #
+        # Маркеры
+        #
+        settingsFrameMarker = LabelFrame(self, text="Настройка элемента маркер")
 
-        self.thick_line.grid(row=2, column=0, padx=5, pady=5)
-        self.thick_line_spin.grid(row=2, column=1, padx=5, pady=5)
+        # Цвет маркера
+        self.old_marker_color = list(self.line_color_Mapping.values()).index(marker_color)
+        markerColorLabel = Label(settingsFrameMarker, text="Цвет маркера", borderwidth=5)
+        markerColorLabel.grid(row=0, column=0, padx=5, pady=5)
+        self.markerColorCombo = ttk.Combobox(settingsFrameMarker, values=self.line_color_label)
+        self.markerColorCombo.grid(row=0, column=1, padx=5, pady=5)
+        self.markerColorCombo.current(self.old_marker_color)
 
-        self.line_settings.pack(fill=Y)
+        # Тип маркера
+        self.marker_type = MARKER_TYPE
+        self.marker_label = list(self.marker_type.keys())
+        self.old_marker_type = list(self.marker_type.values()).index(marker_type)
 
-        marker_settings = LabelFrame(self, text="Настройка элемента маркер")
+        typeMarkerLabel = Label(settingsFrameMarker, text="Тип маркера", borderwidth=5)
+        typeMarkerLabel.grid(row=1, column=0, padx=5, pady=5)
+        self.typeMarkerCombo = ttk.Combobox(settingsFrameMarker, values=self.marker_label)
+        self.typeMarkerCombo.grid(row=1, column=1, padx=5, pady=5)
+        self.typeMarkerCombo.current(self.old_marker_type)
 
-        marker_color = Label(marker_settings, text="Цвет маркера", borderwidth=5)
-        marker_color_combo = ttk.Combobox(marker_settings,
-                                          values=self.line_color_label)
+        # Размер маркера
+        markerSizeLabel = Label(settingsFrameMarker, text="Размер маркера", borderwidth=5)
+        markerSizeLabel.grid(row=2, column=0, padx=5, pady=5)
+        self.markerSize = StringVar(value=marker_size)
+        self.markerSizeSpin = Spinbox(settingsFrameMarker, from_=0, to=10, width=5, textvariable=self.markerSize)
+        self.markerSizeSpin.grid(row=2, column=1, padx=5, pady=5)
 
-        type_marker = Label(marker_settings, text="Тип маркера", borderwidth=5)
-        type_marker_combo = ttk.Combobox(marker_settings, values=["Точка", "Пиксель", "Окружность", "Треугольник"])
+        settingsFrameMarker.pack(fill=Y, padx=5)
 
-        spinbox_var = StringVar(value=1)
-        size_marker = Label(marker_settings, text="Размер маркера", borderwidth=5)
-        size_marker_spin = Spinbox(marker_settings, from_=0, to=10, width=5, textvariable=spinbox_var)
-
-        marker_color.grid(row=0, column=0, padx=5, pady=5)
-        marker_color_combo.grid(row=0, column=1, padx=5, pady=5)
-        marker_color_combo.current(0)
-
-        type_marker.grid(row=1, column=0, padx=5, pady=5)
-        type_marker_combo.grid(row=1, column=1, padx=5, pady=5)
-        type_marker_combo.current(0)
-
-        size_marker.grid(row=2, column=0, padx=5, pady=5)
-        size_marker_spin.grid(row=2, column=1, padx=5, pady=5)
-
-        marker_settings.pack(fill=Y)
-
-        ok = Button(self, text="Применить", borderwidth=1, command=self.send_data)
-        ok.pack(side=TOP, fill=X)
+        ok = ttk.Button(self, text="Применить", command=self.send_data)
+        ok.pack(side=TOP)
 
     def send_data(self):
-        # Get the value of the entry widget
+        line_color = self.line_color_Mapping[self.lineColorCombo.get()]
+        line_type = self.line_type_Mapping[self.typeLineCombo.get()]
+        line_thick = self.thickLineSpin.get()
 
-        line_color = self.line_color_Mapping[self.line_color_combo.get()]
-        line_type = self.line_type_Mapping[self.type_line_combo.get()]
-        line_thick = self.thick_line_spin.get()
-        # Call the callback function and pass the data
-        self.callback([line_color, line_type, line_thick])
+        markerColor = self.line_color_Mapping[self.markerColorCombo.get()]
+        markerType = self.marker_type[self.typeMarkerCombo.get()]
+        markerSize = self.markerSizeSpin.get()
+
+        self.callback([line_color, line_type, line_thick, markerColor, markerType, markerSize])
         self.master.gen_graph()
