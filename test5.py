@@ -5,6 +5,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter.messagebox import showerror
 import customtkinter as ctk
+from info import Info
 from line import Lines
 from OX import OXname
 from singleFile import SingleFile
@@ -41,15 +42,26 @@ class App(Tk):
 
         self.addNew = ttk.Button(self.fTop, text="Добавить новый", width=20, command=self.createNewGraph)
         self.addNew.grid(row=0, column=2, sticky=W)
+        #
+        # self.goToLabel = ttk.Label(self.fTop, text="Перейти к:", justify=LEFT)
+        # self.goToLabel.grid(row=0, column=3, sticky=W)
+        # self.goTo = StringVar()
+        # self.goTo.set(0)
+        # self.goToField = ttk.Entry(self.fTop, width=5, textvariable=self.goTo, justify=LEFT)
+        # self.goToField.grid(row=0, column=4)
+        # self.goToButton = ttk.Button(self.fTop, text="ok", command=self.set_curret)
+        # self.goToButton.grid(row=0, column=5, sticky=W)
 
         self.goToLabel = ttk.Label(self.fTop, text="Перейти к:", justify=LEFT)
         self.goToLabel.grid(row=0, column=3, sticky=W)
         self.goTo = StringVar()
-        self.goTo.set(0)
-        self.goToField = ttk.Entry(self.fTop, width=5, textvariable=self.goTo, justify=LEFT)
+        self.goTo.set(1)
+        self.goToField = Spinbox(self.fTop, width=5, from_=1, to=1, textvariable=self.goTo, justify=LEFT)
         self.goToField.grid(row=0, column=4)
         self.goToButton = ttk.Button(self.fTop, text="ok", command=self.set_curret)
         self.goToButton.grid(row=0, column=5, sticky=W)
+
+
 
         self.buildButton = ttk.Button(self.fTop, text="Построить", command=self.gen_graph)
         self.buildButton.grid(row=1, column=5, ipadx=77, ipady=6)
@@ -149,6 +161,9 @@ class App(Tk):
         self.saveBtn = ttk.Button(self.fDown, text="Сохранить изображение", command=self.save)
         self.saveBtn.grid(row=0, column=1, padx=5, pady=5)
 
+        self.saveBtn = ttk.Button(self.fDown, text="ⓘ", command=self.open_info)
+        self.saveBtn.grid(row=0, column=2, padx=5, pady=5)
+
         # self.l9 = Button(self.fDown, text="Сохранить в файл", borderwidth=5)
         # self.l9.grid(row=0, column=2, padx=5, pady=5)
         self.fDown.pack(side=BOTTOM, padx=[10, 10], pady=[10, 10])
@@ -161,8 +176,11 @@ class App(Tk):
         self.canvas.pack(fill=BOTH, expand=1)
 
     currentGraphIndex = 0
-    lastAddedIndex = 0
+    lastAddedIndex = 1
     graphs = np.array([GraphSettings(X=[], Y=[])])
+
+    def open_info(self):
+        Info(self)
 
     def open_grid(self):
         def callback(data):
@@ -182,13 +200,15 @@ class App(Tk):
             self.graphs[self.currentGraphIndex].legend, \
             self.graphs[self.currentGraphIndex].legend_location, \
             self.graphs[self.currentGraphIndex].legend_fontsize, \
-            self.graphs[self.currentGraphIndex].legend_shadow = data
+            self.graphs[self.currentGraphIndex].legend_shadow, \
+            self.graphs[self.currentGraphIndex].is_show_legend = data
 
         Legend(self, callback,
                self.graphs[self.currentGraphIndex].legend,
                self.graphs[self.currentGraphIndex].legend_location,
                self.graphs[self.currentGraphIndex].legend_fontsize,
-               self.graphs[self.currentGraphIndex].legend_shadow
+               self.graphs[self.currentGraphIndex].legend_shadow,
+               self.graphs[self.currentGraphIndex].is_show_legend,
                )
 
     def open_lines(self):
@@ -261,8 +281,6 @@ class App(Tk):
         #     if (not (self.isUseFile.get())):
         #         self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 5)
 
-    isUseLegend = True
-
     def gen_graph(self):
         # try:
         a = float(self.start.get())
@@ -274,10 +292,10 @@ class App(Tk):
             exec('f = lambda x:' + self.graphs[self.currentGraphIndex].func, globals())
             self.graphs[self.currentGraphIndex].X = np.linspace(a, b, 500)
             self.graphs[self.currentGraphIndex].Y = [f(x) for x in self.graphs[self.currentGraphIndex].X]
-            if self.graphs[self.currentGraphIndex].legend == '' and self.isUseLegend:
+            if self.graphs[self.currentGraphIndex].legend == '' and self.graphs[self.currentGraphIndex].is_show_legend:
                 self.graphs[self.currentGraphIndex].legend = self.graphs[self.currentGraphIndex].func
         else:
-            if self.graphs[self.currentGraphIndex].legend == '' and self.isUseLegend:
+            if self.graphs[self.currentGraphIndex].legend == '' and self.graphs[self.currentGraphIndex].is_show_legend:
                 self.graphs[self.currentGraphIndex].legend = os.path.basename(self.graphs[self.currentGraphIndex].file)
 
         # TODO - передесать чтобы не открывалось лишнее окно, но данные получались если просто вставить ссылку на файл при запуске программы
@@ -298,7 +316,7 @@ class App(Tk):
                     markerfacecolor=graph.marker_color,
                     markeredgecolor=graph.marker_color,
                 )
-            if (self.isUseLegend):
+            if (self.graphs[self.currentGraphIndex].is_show_legend):
                 for graph in self.graphs:
                     self.ax.plot(
                         graph.X,
@@ -313,14 +331,14 @@ class App(Tk):
                         markeredgecolor=graph.marker_color,
 
                     )
-            if (self.isUseLegend):
+            if (self.graphs[self.currentGraphIndex].is_show_legend):
                 self.ax.legend(loc=graph.legend_location,
                                shadow=graph.legend_shadow,
                                fontsize=graph.legend_fontsize)
         # для одного графика на полотне
         else:
             # если легенда включена
-            if (self.isUseLegend):
+            if (self.graphs[self.currentGraphIndex].is_show_legend):
                 self.ax.plot(
                     self.graphs[self.currentGraphIndex].X,
                     self.graphs[self.currentGraphIndex].Y,
@@ -380,8 +398,10 @@ class App(Tk):
         self.strFunc.set("")
         self.strFile.set(file)
         self.lastAddedIndex += 1
-        self.currentGraphIndex = self.lastAddedIndex
+        self.currentGraphIndex = self.lastAddedIndex - 1
         self.graphs = np.append(self.graphs, [GraphSettings(X=x, Y=y, file=file, x_column=x_column, y_column=y_column)])
+        self.goToField = Spinbox(self.fTop, width=5, from_=1, to=self.graphs.shape[0], textvariable=self.goTo, justify=LEFT)
+        self.goToField.grid(row=0, column=4)
         if (not (file == "")):
             self.isUseFile.set(True)
         # self.print_current()
@@ -391,7 +411,7 @@ class App(Tk):
         if (self.goTo.get() < str(0) or self.goTo.get() > str(self.lastAddedIndex)):
             showerror('Ошибка', "Графика не найдено")
         else:
-            self.currentGraphIndex = int(self.goTo.get())
+            self.currentGraphIndex = int(self.goTo.get())-1
             self.strFunc.set(self.graphs[self.currentGraphIndex].func)
             self.strFile.set(self.graphs[self.currentGraphIndex].file)
 

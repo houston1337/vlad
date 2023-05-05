@@ -4,7 +4,7 @@ from location import LOCATION
 
 
 class Legend(Toplevel):
-    def __init__(self, master, callback, text='', location='best', font_size=12, shadow=False):
+    def __init__(self, master, callback, text='', location='best', font_size=12, shadow=False, is_show_legend=False):
         super().__init__(master)
         self.callback = callback
         self.title("Настройка легенды")
@@ -39,6 +39,11 @@ class Legend(Toplevel):
         self.fontSizeSpin = Spinbox(settingsFrame, from_=0, to=30, width=5, textvariable=font_size_value)
         self.fontSizeSpin.grid(row=3, column=1, padx=5, pady=5)
 
+        self.isShowLegend = BooleanVar()
+        self.isShowLegend.set(is_show_legend)
+        self.isShowLegendCheck = ttk.Checkbutton(settingsFrame, text="Показать легенду", variable=self.isShowLegend)
+        self.isShowLegendCheck.grid(row=4, column=0, columnspan=2)
+
         settingsFrame.pack(fill=Y, padx=5)
 
         ok = ttk.Button(self, text="Применить", command=self.send_data)
@@ -49,6 +54,7 @@ class Legend(Toplevel):
         legend_location = self.legend_location[self.legendLocationCombo.get()]
         legend_fontsize = self.fontSizeSpin.get()
         legend_shadow = self.isShadow.get()
+        is_show_legend = self.isShowLegend.get()
 
-        self.callback([legend, legend_location, legend_fontsize, legend_shadow])
+        self.callback([legend, legend_location, legend_fontsize, legend_shadow, is_show_legend])
         self.master.gen_graph()

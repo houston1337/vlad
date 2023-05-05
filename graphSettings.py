@@ -1,5 +1,6 @@
 import os
 
+
 class GraphSettings:
     def __init__(self,
                  X, Y,
@@ -17,6 +18,7 @@ class GraphSettings:
                  grid_type=' ',
                  grid_thickness=0.5,
                  grid_axis='both',
+                 is_show_legend=False,
                  legend='',
                  legend_location='best',
                  legend_fontsize=12,
@@ -48,6 +50,7 @@ class GraphSettings:
         self.marker_color = marker_color
         self.marker_type = marker_type
         self.marker_size = marker_size
+        self.is_show_legend = is_show_legend
 
     def print_properties(self):
         print("X: ", self.X)
@@ -67,6 +70,7 @@ class GraphSettings:
         print("grid_thickness: ", self.grid_thickness)
         print("grid_axis: ", self.grid_axis)
         print("legend: ", self.legend)
+        print("is_show_legend: ", self.is_show_legend)
         print("legend_location : ", self.legend_location)
         print("legend_fontsize : ", self.legend_fontsize)
         print("legend_shadow : ", self.legend_shadow)
