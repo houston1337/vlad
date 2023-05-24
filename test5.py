@@ -340,14 +340,16 @@ class App(Tk):
         multipleFile(self)
 
     def open_save(self):
-        self.graphs[self.currentGraphIndex].save_path = filedialog.asksaveasfilename(initialdir="/",
-                                                                                     title="Select file",
+        self.graphs[self.currentGraphIndex].save_path = filedialog.asksaveasfilename(initialdir="C:/Users/Egor/Desktop/vlad",
+                                                                                     title="Save file",
                                                                                      filetypes=(("jpg files", "*.jpg"),
                                                                                                 ("eps files", "*.eps"),
                                                                                                 ("png files", "*.png"),
                                                                                                 ("all files", "*.*")))
         self.default_save_path = self.graphs[self.currentGraphIndex].save_path
         print(self.graphs[self.currentGraphIndex].save_path)
+        self.save()
+
 
     def read_from_file(self):
         def callback(data):
@@ -384,7 +386,7 @@ class App(Tk):
 
 
     def save(self):
-        self.after(100, self.gen_graph)
+        self.gen_graph()
         self.canvasAgg.print_figure(self.graphs[self.currentGraphIndex].save_path)
 
     def clear(self):
