@@ -166,7 +166,7 @@ class App(Tk):
         self.clearBtn = ttk.Button(self.fDown, text="Очистить", command=self.clear)
         self.clearBtn.grid(row=0, column=0, padx=5, pady=5)
 
-        self.saveBtn = ttk.Button(self.fDown, text="Сохранить изображение", command=self.save)
+        self.saveBtn = ttk.Button(self.fDown, text="Сохранить все", command=self.save_all)
         self.saveBtn.grid(row=0, column=1, padx=5, pady=5)
 
         self.saveBtn = ttk.Button(self.fDown, text="Сохранить как", command=self.open_save)
@@ -225,6 +225,7 @@ class App(Tk):
     default_title_background_color = 'white'
     default_background_color = 'white'
     default_background_color_alpha = 1.0
+    default_save_path = ''
 
     def open_info(self):
         Info(self)
@@ -345,6 +346,7 @@ class App(Tk):
                                                                                                 ("eps files", "*.eps"),
                                                                                                 ("png files", "*.png"),
                                                                                                 ("all files", "*.*")))
+        self.default_save_path = self.graphs[self.currentGraphIndex].save_path
         print(self.graphs[self.currentGraphIndex].save_path)
 
     def read_from_file(self):
@@ -372,6 +374,14 @@ class App(Tk):
     #
     #     SingleFile(self, callback, self.strFile.get(), x_column=self.graphs[self.currentGraphIndex].x_column,
     #                y_column=self.graphs[self.currentGraphIndex].y_column).send_data()
+
+    def save_all(self):
+        self.open_save()
+        for graph in range(len(self.graphs)):
+            self.set_curret(graph)
+            self.gen_graph()
+            self.canvasAgg.print_figure(self.default_save_path + str(graph) + ".jpg")
+
 
     def save(self):
         self.after(100, self.gen_graph)
@@ -618,14 +628,20 @@ class App(Tk):
             graph.background_color = self.default_background_color
             graph.background_color_alpha = self.default_background_color_alpha
 
-    def set_curret(self):
-        # self.print_current()
-        if (self.goTo.get() < str(0) or self.goTo.get() > str(self.lastAddedIndex)):
-            showerror('Ошибка', "Графика не найдено")
+    def set_curret(self, *args):
+
+        if (len(args)<=0):
+            if (self.goTo.get() < str(0) or self.goTo.get() > str(self.lastAddedIndex)):
+                showerror('Ошибка', "Графика не найдено")
+            else:
+                self.currentGraphIndex = int(self.goTo.get()) - 1
+                self.strFunc.set(self.graphs[self.currentGraphIndex].func)
+                self.strFile.set(self.graphs[self.currentGraphIndex].file)
         else:
-            self.currentGraphIndex = int(self.goTo.get()) - 1
+            self.currentGraphIndex = int(args[0])
             self.strFunc.set(self.graphs[self.currentGraphIndex].func)
             self.strFile.set(self.graphs[self.currentGraphIndex].file)
+
 
     def printAll(self):
         for graph in self.graphs:
