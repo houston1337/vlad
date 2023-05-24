@@ -6,15 +6,20 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter.messagebox import showerror
 import customtkinter as ctk
 from info import Info
-from line import Lines
-from OX import OXname
-from singleFile import SingleFile
+from Line import Lines
+from OX import Ox
+from OY import Oy
+from SingleFile import SingleFile
 from graphSettings import GraphSettings
-from multipleFiles import multipleFile
+from MultipleFiles import multipleFile
 from math import *
-from grid import Grid
-from legend import Legend
+from Grid import Grid
+from Legend import Legend
 import os
+from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
+from tkinter import filedialog
+from Title import Title
+from Background import Background
 
 
 class App(Tk):
@@ -60,8 +65,6 @@ class App(Tk):
         self.goToField.grid(row=0, column=4)
         self.goToButton = ttk.Button(self.fTop, text="ok", command=self.set_curret)
         self.goToButton.grid(row=0, column=5, sticky=W)
-
-
 
         self.buildButton = ttk.Button(self.fTop, text="Построить", command=self.gen_graph)
         self.buildButton.grid(row=1, column=5, ipadx=77, ipady=6)
@@ -123,7 +126,7 @@ class App(Tk):
 
         self.backgroundLabel = Label(self.fBottom, text="Фон", borderwidth=5)
         self.backgroundLabel.grid(row=1, column=0, padx=5, pady=5)
-        self.backgroundBtn = ttk.Button(self.fBottom, text="Настроить")
+        self.backgroundBtn = ttk.Button(self.fBottom, text="Настроить", command=self.open_background)
         self.backgroundBtn.grid(row=1, column=1, padx=5, pady=5)
 
         self.xAxisLabel = Label(self.fBottom, text="Ось X", borderwidth=5)
@@ -133,12 +136,12 @@ class App(Tk):
 
         self.yAxisLabel = Label(self.fBottom, text="Ось Y", borderwidth=5)
         self.yAxisLabel.grid(row=3, column=0, padx=5, pady=5)
-        self.yAxisBtn = ttk.Button(self.fBottom, text="Настроить")
+        self.yAxisBtn = ttk.Button(self.fBottom, text="Настроить", command=self.open_OY)
         self.yAxisBtn.grid(row=3, column=1, padx=5, pady=5)
 
         self.headerLabel = Label(self.fBottom, text="Заголовок", borderwidth=5)
         self.headerLabel.grid(row=4, column=0, padx=5, pady=5)
-        self.headerBtn = ttk.Button(self.fBottom, text="Настроить")
+        self.headerBtn = ttk.Button(self.fBottom, text="Настроить", command=self.open_title)
         self.headerBtn.grid(row=4, column=1, padx=5, pady=5)
 
         self.gridLabel = Label(self.fBottom, text="Сетка", borderwidth=5)
@@ -151,6 +154,11 @@ class App(Tk):
         self.legendBtn = ttk.Button(self.fBottom, text="Настроить", command=self.open_legend)
         self.legendBtn.grid(row=7, column=1, padx=5, pady=5)
 
+        self.setAllLabel = Label(self.fBottom, text="Применить стандартную \nнастройку для всех", borderwidth=5)
+        self.setAllLabel.grid(row=8, column=0, padx=5, pady=5)
+        self.setAllBtn = ttk.Button(self.fBottom, text="ок", command=self.set_all)
+        self.setAllBtn.grid(row=8, column=1, padx=5, pady=5)
+
         self.fBottom.pack(side=RIGHT, fill=Y, padx=10, pady=10)
 
         self.fDown = LabelFrame()
@@ -161,8 +169,11 @@ class App(Tk):
         self.saveBtn = ttk.Button(self.fDown, text="Сохранить изображение", command=self.save)
         self.saveBtn.grid(row=0, column=1, padx=5, pady=5)
 
-        self.saveBtn = ttk.Button(self.fDown, text="ⓘ", command=self.open_info)
+        self.saveBtn = ttk.Button(self.fDown, text="Сохранить как", command=self.open_save)
         self.saveBtn.grid(row=0, column=2, padx=5, pady=5)
+
+        self.saveBtn = ttk.Button(self.fDown, text="Справка", command=self.open_info)
+        self.saveBtn.grid(row=0, column=3, padx=5, pady=5)
 
         # self.l9 = Button(self.fDown, text="Сохранить в файл", borderwidth=5)
         # self.l9.grid(row=0, column=2, padx=5, pady=5)
@@ -178,6 +189,42 @@ class App(Tk):
     currentGraphIndex = 0
     lastAddedIndex = 1
     graphs = np.array([GraphSettings(X=[], Y=[])])
+
+    default_color = "black"
+    default_line_type = "-"
+    default_line_thick = 1
+    default_x_label_text = " "
+    default_x_label_fontsize = 12
+    default_x_label_color = "black"
+    default_x_major_locator = 1
+    default_x_minor_locator = 1
+
+    default_y_label_text = " "
+    default_y_label_fontsize = 12
+    default_y_label_color = "black"
+    default_y_major_locator = 1
+    default_y_minor_locator = 1
+
+    default_grid_color = "grey"
+    default_grid_type = ' '
+    default_grid_thickness = 0.5
+    default_grid_axis = 'both'
+    default_is_show_legend = False
+    default_legend = ''
+    default_legend_location = 'best'
+    default_legend_fontsize = 12
+    default_legend_shadow = False
+    default_marker_color = "black"
+    default_marker_type = ""
+    default_marker_size = 1
+
+    default_title_text = ''
+    default_title_fontsize = 12
+    default_title_text_color = 'black'
+    default_title_text_position = 'center'
+    default_title_background_color = 'white'
+    default_background_color = 'white'
+    default_background_color_alpha = 1.0
 
     def open_info(self):
         Info(self)
@@ -211,6 +258,31 @@ class App(Tk):
                self.graphs[self.currentGraphIndex].is_show_legend,
                )
 
+    def open_background(self):
+        def callback(data):
+            self.graphs[self.currentGraphIndex].background_color, \
+            self.graphs[self.currentGraphIndex].background_color_alpha = data
+
+        Background(self, callback,
+                   self.graphs[self.currentGraphIndex].background_color,
+                   self.graphs[self.currentGraphIndex].background_color_alpha)
+
+    def open_title(self):
+        def callback(data):
+            self.graphs[self.currentGraphIndex].title_text, \
+            self.graphs[self.currentGraphIndex].title_fontsize, \
+            self.graphs[self.currentGraphIndex].title_text_color, \
+            self.graphs[self.currentGraphIndex].title_text_position, \
+            self.graphs[self.currentGraphIndex].title_background_color = data
+
+        Title(self, callback,
+              self.graphs[self.currentGraphIndex].title_text,
+              self.graphs[self.currentGraphIndex].title_fontsize,
+              self.graphs[self.currentGraphIndex].title_text_color,
+              self.graphs[self.currentGraphIndex].title_text_position,
+              self.graphs[self.currentGraphIndex].title_background_color
+              )
+
     def open_lines(self):
         def callback(data):
             self.graphs[self.currentGraphIndex].color, \
@@ -233,15 +305,47 @@ class App(Tk):
         def callback(data):
             self.graphs[self.currentGraphIndex].x_label_text, \
             self.graphs[self.currentGraphIndex].x_label_fontsize, \
-            self.graphs[self.currentGraphIndex].x_label_color = data
+            self.graphs[self.currentGraphIndex].x_label_color, \
+            self.graphs[self.currentGraphIndex].x_major_locator, \
+            self.graphs[self.currentGraphIndex].x_minor_locator \
+                = data
 
-        OXname(self, callback,
-               self.graphs[self.currentGraphIndex].x_label_text,
-               self.graphs[self.currentGraphIndex].x_label_fontsize,
-               self.graphs[self.currentGraphIndex].x_label_color)
+        Ox(self, callback,
+           self.graphs[self.currentGraphIndex].x_label_text,
+           self.graphs[self.currentGraphIndex].x_label_fontsize,
+           self.graphs[self.currentGraphIndex].x_label_color,
+           self.graphs[self.currentGraphIndex].x_major_locator,
+           self.graphs[self.currentGraphIndex].x_minor_locator,
+           )
+
+    def open_OY(self):
+        def callback(data):
+            self.graphs[self.currentGraphIndex].y_label_text, \
+            self.graphs[self.currentGraphIndex].y_label_fontsize, \
+            self.graphs[self.currentGraphIndex].y_label_color, \
+            self.graphs[self.currentGraphIndex].y_major_locator, \
+            self.graphs[self.currentGraphIndex].y_minor_locator \
+                = data
+
+        Oy(self, callback,
+           self.graphs[self.currentGraphIndex].y_label_text,
+           self.graphs[self.currentGraphIndex].y_label_fontsize,
+           self.graphs[self.currentGraphIndex].y_label_color,
+           self.graphs[self.currentGraphIndex].y_major_locator,
+           self.graphs[self.currentGraphIndex].y_minor_locator,
+           )
 
     def open_multi(self):
         multipleFile(self)
+
+    def open_save(self):
+        self.graphs[self.currentGraphIndex].save_path = filedialog.asksaveasfilename(initialdir="/",
+                                                                                     title="Select file",
+                                                                                     filetypes=(("jpg files", "*.jpg"),
+                                                                                                ("eps files", "*.eps"),
+                                                                                                ("png files", "*.png"),
+                                                                                                ("all files", "*.*")))
+        print(self.graphs[self.currentGraphIndex].save_path)
 
     def read_from_file(self):
         def callback(data):
@@ -271,7 +375,7 @@ class App(Tk):
 
     def save(self):
         self.after(100, self.gen_graph)
-        self.canvasAgg.print_figure('1.jpg')
+        self.canvasAgg.print_figure(self.graphs[self.currentGraphIndex].save_path)
 
     def clear(self):
         self.ax.clear()
@@ -283,6 +387,7 @@ class App(Tk):
 
     def gen_graph(self):
         # try:
+
         a = float(self.start.get())
         b = float(self.end.get())
         # print(str(a) + " " + str(b))
@@ -297,9 +402,6 @@ class App(Tk):
         else:
             if self.graphs[self.currentGraphIndex].legend == '' and self.graphs[self.currentGraphIndex].is_show_legend:
                 self.graphs[self.currentGraphIndex].legend = os.path.basename(self.graphs[self.currentGraphIndex].file)
-
-        # TODO - передесать чтобы не открывалось лишнее окно, но данные получались если просто вставить ссылку на файл при запуске программы
-        # selfread_from_file2()
 
         self.ax.clear()  # очистить графическую область
         # рисуем все графики на одном холсте
@@ -316,25 +418,24 @@ class App(Tk):
                     markerfacecolor=graph.marker_color,
                     markeredgecolor=graph.marker_color,
                 )
-            if (self.graphs[self.currentGraphIndex].is_show_legend):
-                for graph in self.graphs:
-                    self.ax.plot(
-                        graph.X,
-                        graph.Y,
-                        color=graph.color,
-                        linestyle=graph.line_type,
-                        linewidth=graph.line_thick,
-                        label=graph.legend,
-                        marker=graph.marker_type,
-                        markersize=graph.marker_size,
-                        markerfacecolor=graph.marker_color,
-                        markeredgecolor=graph.marker_color,
-
-                    )
-            if (self.graphs[self.currentGraphIndex].is_show_legend):
-                self.ax.legend(loc=graph.legend_location,
-                               shadow=graph.legend_shadow,
-                               fontsize=graph.legend_fontsize)
+                if (self.graphs[self.currentGraphIndex].is_show_legend):
+                    for graph in self.graphs:
+                        self.ax.plot(
+                            graph.X,
+                            graph.Y,
+                            color=graph.color,
+                            linestyle=graph.line_type,
+                            linewidth=graph.line_thick,
+                            label=graph.legend,
+                            marker=graph.marker_type,
+                            markersize=graph.marker_size,
+                            markerfacecolor=graph.marker_color,
+                            markeredgecolor=graph.marker_color,
+                        )
+                if (self.graphs[self.currentGraphIndex].is_show_legend):
+                    self.ax.legend(loc=graph.legend_location,
+                                   shadow=graph.legend_shadow,
+                                   fontsize=graph.legend_fontsize)
         # для одного графика на полотне
         else:
             # если легенда включена
@@ -350,7 +451,6 @@ class App(Tk):
                     markersize=self.graphs[self.currentGraphIndex].marker_size,
                     markerfacecolor=self.graphs[self.currentGraphIndex].marker_color,
                     markeredgecolor=self.graphs[self.currentGraphIndex].marker_color,
-
                 )
                 self.ax.legend(loc=self.graphs[self.currentGraphIndex].legend_location,
                                shadow=self.graphs[self.currentGraphIndex].legend_shadow,
@@ -370,17 +470,45 @@ class App(Tk):
                 )
 
         # подпись по Х
+        self.ax.xaxis.set_major_locator(MultipleLocator(self.graphs[self.currentGraphIndex].x_major_locator))
+        self.ax.xaxis.set_major_formatter('{x:.0f}')
+        self.ax.xaxis.set_minor_locator(MultipleLocator(self.graphs[self.currentGraphIndex].x_minor_locator))
+
         self.ax.set_xlabel(
             self.graphs[self.currentGraphIndex].x_label_text,
             fontsize=self.graphs[self.currentGraphIndex].x_label_fontsize,
             color=self.graphs[self.currentGraphIndex].x_label_color)
+
+        # подпись по Y
+        self.ax.yaxis.set_major_locator(MultipleLocator(self.graphs[self.currentGraphIndex].y_major_locator))
+        self.ax.yaxis.set_major_formatter('{x:.0f}')
+        self.ax.yaxis.set_minor_locator(MultipleLocator(self.graphs[self.currentGraphIndex].y_minor_locator))
+
+        self.ax.set_ylabel(
+            self.graphs[self.currentGraphIndex].y_label_text,
+            fontsize=self.graphs[self.currentGraphIndex].y_label_fontsize,
+            color=self.graphs[self.currentGraphIndex].y_label_color)
+
         # настройка сетки
         self.ax.grid(color=self.graphs[self.currentGraphIndex].grid_color,
                      linestyle=self.graphs[self.currentGraphIndex].grid_type,
                      linewidth=self.graphs[self.currentGraphIndex].grid_thickness,
                      axis=self.graphs[self.currentGraphIndex].grid_axis)
 
-        # настройка легенды
+        # настройка заголовка
+        self.ax.set_title(
+            self.graphs[self.currentGraphIndex].title_text,
+            loc=self.graphs[self.currentGraphIndex].title_text_position,
+            fontsize=self.graphs[self.currentGraphIndex].title_fontsize,
+            backgroundcolor=self.graphs[self.currentGraphIndex].title_background_color,
+            color=self.graphs[self.currentGraphIndex].title_text_color,
+        )
+
+        # настройка фона
+        self.ax.set_facecolor(self.graphs[self.currentGraphIndex].background_color)
+        self.ax.patch.set_alpha(self.graphs[self.currentGraphIndex].background_color_alpha)
+
+        # self.fig.set_facecolor('red')
 
         self.canvasAgg.draw()  # перерисовать «составной» холст
         self.print_current()
@@ -394,24 +522,108 @@ class App(Tk):
     def print_current(self):
         self.graphs[self.currentGraphIndex].print_properties()
 
-    def createNewGraph(self, x=[], y=[], file="", x_column=0, y_column=1):
+    def createNewGraph(self, x=[], y=[],
+                       file="",
+                       x_column=0,
+                       y_column=1,
+                       ):
         self.strFunc.set("")
         self.strFile.set(file)
         self.lastAddedIndex += 1
         self.currentGraphIndex = self.lastAddedIndex - 1
-        self.graphs = np.append(self.graphs, [GraphSettings(X=x, Y=y, file=file, x_column=x_column, y_column=y_column)])
-        self.goToField = Spinbox(self.fTop, width=5, from_=1, to=self.graphs.shape[0], textvariable=self.goTo, justify=LEFT)
+        self.graphs = np.append(self.graphs, [GraphSettings(X=x, Y=y, file=file,
+                                                            x_column=x_column, y_column=y_column,
+                                                            color=self.default_color,
+                                                            line_type=self.default_line_type,
+                                                            line_thick=self.default_line_thick,
+                                                            x_label_text=self.default_x_label_text,
+                                                            x_label_fontsize=self.default_x_label_fontsize,
+                                                            x_label_color=self.default_x_label_color,
+                                                            x_major_locator=self.default_x_major_locator,
+                                                            x_minor_locator=self.default_x_minor_locator,
+
+                                                            y_label_text=self.default_y_label_text,
+                                                            y_label_fontsize=self.default_y_label_fontsize,
+                                                            y_label_color=self.default_y_label_color,
+                                                            y_major_locator=self.default_y_major_locator,
+                                                            y_minor_locator=self.default_y_minor_locator,
+
+                                                            grid_color=self.default_grid_color,
+                                                            grid_type=self.default_grid_type,
+                                                            grid_thickness=self.default_grid_thickness,
+                                                            grid_axis=self.default_grid_axis,
+                                                            is_show_legend=self.default_is_show_legend,
+                                                            legend=self.default_legend,
+                                                            legend_location=self.default_legend_location,
+                                                            legend_fontsize=self.default_legend_fontsize,
+                                                            legend_shadow=self.default_legend_shadow,
+                                                            marker_color=self.default_marker_color,
+                                                            marker_type=self.default_marker_type,
+                                                            marker_size=self.default_marker_size,
+
+                                                            title_text=self.default_title_text,
+                                                            title_fontsize=self.default_title_fontsize,
+                                                            title_text_color=self.default_title_text_color,
+                                                            title_text_position=self.default_title_text_position,
+                                                            title_background_color=self.default_title_background_color,
+
+                                                            background_color=self.default_background_color,
+                                                            background_color_alpha=self.default_background_color_alpha,
+                                                            )])
+
+        self.goToField = Spinbox(self.fTop, width=5, from_=1, to=self.graphs.shape[0], textvariable=self.goTo,
+                                 justify=LEFT)
         self.goToField.grid(row=0, column=4)
         if (not (file == "")):
             self.isUseFile.set(True)
         # self.print_current()
+
+    # TODO - создать функцию по всем self.graphs которая меняет параметры по умолчанию
+    def set_all(self):
+        for graph in self.graphs:
+            graph.color = self.default_color
+            graph.line_type = self.default_line_type
+            graph.line_thick = self.default_line_thick
+            graph.x_label_text = self.default_x_label_text
+            graph.x_label_fontsize = self.default_x_label_fontsize
+            graph.x_label_color = self.default_x_label_color
+            graph.x_major_locator = self.default_x_major_locator
+            graph.x_minor_locator = self.default_x_minor_locator
+
+            graph.y_label_text = self.default_y_label_text
+            graph.y_label_fontsize = self.default_y_label_fontsize
+            graph.y_label_color = self.default_y_label_color
+            graph.y_major_locator = self.default_y_major_locator
+            graph.y_minor_locator = self.default_y_minor_locator
+
+            graph.grid_color = self.default_grid_color
+            graph.grid_type = self.default_grid_type
+            graph.grid_thickness = self.default_grid_thickness
+            graph.grid_axis = self.default_grid_axis
+            graph.is_show_legend = self.default_is_show_legend
+            graph.legend = self.default_legend
+            graph.legend_location = self.default_legend_location
+            graph.legend_fontsize = self.default_legend_fontsize
+            graph.legend_shadow = self.default_legend_shadow
+            graph.marker_color = self.default_marker_color
+            graph.marker_type = self.default_marker_type
+            graph.marker_size = self.default_marker_size
+
+            graph.title_text = self.default_title_text
+            graph.title_fontsize = self.default_title_fontsize
+            graph.title_text_color = self.default_title_text_color
+            graph.title_text_position = self.default_title_text_position
+            graph.title_background_color = self.default_title_background_color
+
+            graph.background_color = self.default_background_color
+            graph.background_color_alpha = self.default_background_color_alpha
 
     def set_curret(self):
         # self.print_current()
         if (self.goTo.get() < str(0) or self.goTo.get() > str(self.lastAddedIndex)):
             showerror('Ошибка', "Графика не найдено")
         else:
-            self.currentGraphIndex = int(self.goTo.get())-1
+            self.currentGraphIndex = int(self.goTo.get()) - 1
             self.strFunc.set(self.graphs[self.currentGraphIndex].func)
             self.strFile.set(self.graphs[self.currentGraphIndex].file)
 

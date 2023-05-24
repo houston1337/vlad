@@ -3,12 +3,12 @@ from tkinter import ttk
 from colors import COLORS
 
 
-class Ox(Toplevel):
+class Oy(Toplevel):
     def __init__(self, master, callback, text='', font_size='12', text_color='black', major_var='1', minor_var='1'):
         super().__init__(master)
         self.callback = callback
         self.geometry("380x285")
-        self.title("Настройка оси X")
+        self.title("Настройка оси Y")
 
         self.settingsFrame = LabelFrame(self, text="Настройка подписи")
 
@@ -38,6 +38,7 @@ class Ox(Toplevel):
         self.textThickSpin.grid(row=2, column=1, padx=5, pady=5)
 
         self.settingsFrame.pack(fill=Y)
+
 
         # Деления
         self.locatorFrame = LabelFrame(self, text="Настройка делений")
@@ -75,10 +76,10 @@ class Ox(Toplevel):
         self.master.default_x_minor_locator = float(self.minorSpin.get())
 
     def send_data(self):
-        x_label_text = self.textField.get()
-        x_label_fontsize = self.textThickSpin.get()
-        x_label_color = self.text_colors[self.textColorCombo.get()]
-        x_major_locator = float(self.majorSpin.get())
-        x_minor_locator = float(self.minorSpin.get())
-        self.callback([x_label_text, x_label_fontsize, x_label_color, x_major_locator, x_minor_locator])
+        y_label_text = self.textField.get()
+        y_label_fontsize = self.textThickSpin.get()
+        y_label_color = self.text_colors[self.textColorCombo.get()]
+        y_major_locator = float(self.majorSpin.get())
+        y_minor_locator = float(self.minorSpin.get())
+        self.callback([y_label_text, y_label_fontsize, y_label_color, y_major_locator, y_minor_locator])
         self.master.gen_graph()

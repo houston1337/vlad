@@ -5,7 +5,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter.messagebox import showerror
 import customtkinter as ctk
-from line import Lines
+from Line import Lines
 from OX import OXname
 from numpy import genfromtxt
 

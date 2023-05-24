@@ -79,10 +79,24 @@ class Lines(Toplevel):
         self.markerSizeSpin = Spinbox(settingsFrameMarker, from_=0, to=10, width=5, textvariable=self.markerSize)
         self.markerSizeSpin.grid(row=2, column=1, padx=5, pady=5)
 
+
         settingsFrameMarker.pack(fill=Y, padx=5)
 
-        ok = ttk.Button(self, text="Применить", command=self.send_data)
-        ok.pack(side=TOP)
+        self.btnFrame = LabelFrame(self, text="", bd=0)
+        ok = ttk.Button(self.btnFrame, text="Применить \nк текущему", command=self.send_data)
+        ok.grid(row=0, column=0)
+        default = ttk.Button(self.btnFrame, text="Сохранить настройки \nкак стандатные", command=self.set_as_default)
+        default.grid(row=0, column=1)
+        self.btnFrame.pack(fill=Y, padx=5)
+
+    def set_as_default(self):
+        self.master.default_color = self.line_color_Mapping[self.lineColorCombo.get()]
+        self.master.default_line_type = self.line_type_Mapping[self.typeLineCombo.get()]
+        self.master.default_line_thick = self.thickLineSpin.get()
+
+        self.master.default_marker_color = self.line_color_Mapping[self.markerColorCombo.get()]
+        self.master.default_marker_type = self.marker_type[self.typeMarkerCombo.get()]
+        self.master.default_marker_size = self.markerSizeSpin.get()
 
     def send_data(self):
         line_color = self.line_color_Mapping[self.lineColorCombo.get()]
