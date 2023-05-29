@@ -61,7 +61,7 @@ class Legend(Toplevel):
     def set_as_default(self):
         self.master.default_legend = self.legendField.get()
         self.master.default_legend_location = self.legend_location[self.legendLocationCombo.get()]
-        self.master.default_legend_fontsize = self.thickLineSpin.get()
+        self.master.default_legend_fontsize = self.fontSizeSpin.get()
         self.master.default_legend_shadow = self.isShadow.get()
         self.master.default_is_show_legend = self.isShowLegend.get()
 

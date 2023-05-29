@@ -340,16 +340,16 @@ class App(Tk):
         multipleFile(self)
 
     def open_save(self):
-        self.graphs[self.currentGraphIndex].save_path = filedialog.asksaveasfilename(initialdir="C:/Users/Egor/Desktop/vlad",
-                                                                                     title="Save file",
-                                                                                     filetypes=(("jpg files", "*.jpg"),
-                                                                                                ("eps files", "*.eps"),
-                                                                                                ("png files", "*.png"),
-                                                                                                ("all files", "*.*")))
+        self.graphs[self.currentGraphIndex].save_path = filedialog.asksaveasfilename(
+            initialdir="C:/Users/Egor/Desktop/vlad",
+            title="Save file",
+            filetypes=(("jpg files", "*.jpg"),
+                       ("eps files", "*.eps"),
+                       ("png files", "*.png"),
+                       ("all files", "*.*")))
         self.default_save_path = self.graphs[self.currentGraphIndex].save_path
         print(self.graphs[self.currentGraphIndex].save_path)
         self.save()
-
 
     def read_from_file(self):
         def callback(data):
@@ -383,7 +383,6 @@ class App(Tk):
             self.set_curret(graph)
             self.gen_graph()
             self.canvasAgg.print_figure(self.default_save_path + str(graph) + ".jpg")
-
 
     def save(self):
         self.gen_graph()
@@ -431,23 +430,22 @@ class App(Tk):
                     markeredgecolor=graph.marker_color,
                 )
                 if (self.graphs[self.currentGraphIndex].is_show_legend):
-                    for graph in self.graphs:
-                        self.ax.plot(
-                            graph.X,
-                            graph.Y,
-                            color=graph.color,
-                            linestyle=graph.line_type,
-                            linewidth=graph.line_thick,
-                            label=graph.legend,
-                            marker=graph.marker_type,
-                            markersize=graph.marker_size,
-                            markerfacecolor=graph.marker_color,
-                            markeredgecolor=graph.marker_color,
-                        )
-                if (self.graphs[self.currentGraphIndex].is_show_legend):
+                    self.ax.plot(
+                        graph.X,
+                        graph.Y,
+                        color=graph.color,
+                        linestyle=graph.line_type,
+                        linewidth=graph.line_thick,
+                        label=graph.legend,
+                        marker=graph.marker_type,
+                        markersize=graph.marker_size,
+                        markerfacecolor=graph.marker_color,
+                        markeredgecolor=graph.marker_color,
+                    )
+
                     self.ax.legend(loc=graph.legend_location,
-                                   shadow=graph.legend_shadow,
-                                   fontsize=graph.legend_fontsize)
+                                    shadow=graph.legend_shadow,
+                                    fontsize=graph.legend_fontsize)
         # для одного графика на полотне
         else:
             # если легенда включена
@@ -590,7 +588,6 @@ class App(Tk):
             self.isUseFile.set(True)
         # self.print_current()
 
-    # TODO - создать функцию по всем self.graphs которая меняет параметры по умолчанию
     def set_all(self):
         for graph in self.graphs:
             graph.color = self.default_color
@@ -632,7 +629,7 @@ class App(Tk):
 
     def set_curret(self, *args):
 
-        if (len(args)<=0):
+        if (len(args) <= 0):
             if (self.goTo.get() < str(0) or self.goTo.get() > str(self.lastAddedIndex)):
                 showerror('Ошибка', "Графика не найдено")
             else:
@@ -643,7 +640,6 @@ class App(Tk):
             self.currentGraphIndex = int(args[0])
             self.strFunc.set(self.graphs[self.currentGraphIndex].func)
             self.strFile.set(self.graphs[self.currentGraphIndex].file)
-
 
     def printAll(self):
         for graph in self.graphs:
