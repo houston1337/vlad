@@ -105,7 +105,8 @@ class App(Tk):
         self.batchBtn.grid(row=3, column=1, sticky=W)
 
         self.strFiles = StringVar()
-        self.strFiles.set("ampl1.csv, ampl2.csv ...")
+        # self.strFiles.set("ampl1.csv, ampl2.csv ...")
+        self.strFiles.set("")
         self.filesField = ttk.Entry(self.fTop, width=20, textvariable=self.strFiles)
         self.filesField.grid(row=3, column=2, sticky=W)
 

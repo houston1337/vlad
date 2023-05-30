@@ -62,10 +62,10 @@ class Grid(Toplevel):
         # Кнопки
         self.btnFrame = LabelFrame(self, text="", bd=0)
         ok = ttk.Button(self.btnFrame, text="Применить \nк текущему", command=self.send_data)
-        ok.grid(row=0, column=0)
+        ok.grid(row=0, column=0, ipady=7, ipadx=7)
         default = ttk.Button(self.btnFrame, text="Сохранить настройки \nкак стандатные",
                              command=self.set_as_default)
-        default.grid(row=0, column=1)
+        default.grid(row=0, column=1, ipady=7, ipadx=7)
         self.btnFrame.pack(fill=Y, padx=5)
 
     def set_as_default(self):
@@ -83,7 +83,6 @@ class Grid(Toplevel):
         self.master.default_grid_color = self.line_color_Mapping[self.lineColorCombo.get()]
         self.master.default_grid_type = self.line_type_Mapping[self.typeLineCombo.get()]
         self.master.default_grid_thickness = self.thickLineSpin.get()
-
 
     def send_data(self):
         if (self.isXOn.get() and self.isYOn.get()):
